@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model App {
+  id          String     @id @default(cuid())
+  appId       String     @unique
+  platform    Platform
+  name        String?
+  bundleId    String?
+  description String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  analyses    Analysis[]
+  reviews     Review[]
+
+  @@map("apps")
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  originalId String
+  appId      String
+  platform   Platform
+  title      String
+  content    String
+  rating     Int
+  author     String
+  date       DateTime
+  version    String?
+  helpful    Int?
+  geoScope   String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  app        App      @relation(fields: [appId], references: [appId], onDelete: Cascade)
+
+  @@unique([originalId, platform, appId])
+  @@index([appId, platform])
+  @@index([appId, platform, geoScope])
+  @@index([date])
+  @@map("reviews")
+}
+
+model Analysis {
+  id                  String   @id @default(cuid())
+  appId               String
+  version             Int      @default(1)
+  shareId             String   @unique @default(cuid())
+  isPublic            Boolean  @default(false)
+  dateFilter          String
+  reviewsCount        Int
+  sentiment           String
+  themes              String[]
+  summary             String
+  recommendations     String[]
+  score               Int
+  problems            Json
+  appreciatedFeatures Json?
+  featureRequests     Json?
+  reviewsAnalyzed     Int?
+  openaiModel         String   @default("gpt-4.1")
+  processingTime      Int?
+  createdAt           DateTime @default(now())
+  app                 App      @relation(fields: [appId], references: [appId], onDelete: Cascade)
+
+  @@index([appId, dateFilter])
+  @@index([createdAt])
+  @@index([shareId])
+  @@index([isPublic])
+  @@map("analyses")
+}
+
+enum Platform {
+  APPSTORE
+  GOOGLEPLAY
+}

@@ -15,29 +15,43 @@ export default function Home() {
   const [dateFilter, setDateFilter] = useState<DateFilter>('all')
   const [filteredReviews, setFilteredReviews] = useState<Review[]>([])
   const [selectedProblem, setSelectedProblem] = useState<string | null>(null)
+  const [currentAppId, setCurrentAppId] = useState<string | null>(null)
+  const [currentPlatform, setCurrentPlatform] = useState<'appstore' | 'googleplay' | null>(null)
+  const [fromCache, setFromCache] = useState<boolean>(false)
 
   const handleSearch = async (
     appId: string,
-    platform: 'appstore' | 'googleplay'
+    platform: 'appstore' | 'googleplay',
+    forceRefresh = false,
+    geoScope = 'major'
   ) => {
     setIsLoadingReviews(true)
     setReviews([])
     setReviewsData(null)
     setAnalysis(null)
+    setCurrentAppId(appId)
+    setCurrentPlatform(platform)
 
     try {
-      const response = await fetch(
-        `/api/reviews?appId=${appId}&platform=${platform}`
-      )
+      const params = new URLSearchParams({
+        appId,
+        platform,
+        ...(forceRefresh && { forceRefresh: 'true' }),
+        ...(platform === 'appstore' && { geoScope })
+      })
+      const url = `/api/reviews?${params.toString()}`
+      const response = await fetch(url)
 
       if (!response.ok) {
         throw new Error('Failed to fetch reviews')
       }
 
-      const data: ParsedReviews = await response.json()
-      setReviews(data.reviews)
+      const data: ParsedReviews & { fromCache?: boolean } = await response.json()
+      
+      setReviews(data.reviews || [])
       setReviewsData(data)
-      setFilteredReviews(data.reviews)
+      setFilteredReviews(data.reviews || [])
+      setFromCache(data.fromCache || false)
       setAnalysis(null)
       setSelectedProblem(null)
     } catch (error) {
@@ -93,12 +107,23 @@ export default function Home() {
     setIsLoadingAnalysis(true)
 
     try {
+      const requestBody: any = { 
+        reviews: filteredReviews,
+        dateFilter: dateFilter
+      }
+      
+      // Если есть appId и platform, передаем их для сохранения в БД
+      if (currentAppId && currentPlatform) {
+        requestBody.appId = currentAppId
+        requestBody.platform = currentPlatform
+      }
+
       const response = await fetch('/api/analyze', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ reviews: filteredReviews }),
+        body: JSON.stringify(requestBody),
       })
 
       if (!response.ok) {
@@ -149,6 +174,8 @@ export default function Home() {
               hasReviews={reviews.length > 0}
               dateFilter={dateFilter}
               onDateFilterChange={setDateFilter}
+              currentAppId={currentAppId || undefined}
+              fromCache={fromCache}
             />
           </div>
 

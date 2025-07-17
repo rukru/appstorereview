@@ -5,25 +5,20 @@
 import { GET } from '@/app/api/reviews/route'
 import { NextRequest } from 'next/server'
 
-// Mock the parser functions
-jest.mock('@/lib/parsers/appstore', () => ({
-  parseAppStoreReviews: jest.fn(),
+// Mock the ReviewService
+jest.mock('@/lib/services/reviewService', () => ({
+  ReviewService: {
+    getReviews: jest.fn(),
+  },
 }))
 
-jest.mock('@/lib/parsers/googleplay', () => ({
-  parseGooglePlayReviews: jest.fn(),
-}))
+import { ReviewService } from '@/lib/services/reviewService'
 
-import { parseAppStoreReviews } from '@/lib/parsers/appstore'
-import { parseGooglePlayReviews } from '@/lib/parsers/googleplay'
-
-const mockAppStoreReviews = jest.mocked(parseAppStoreReviews)
-const mockGooglePlayReviews = jest.mocked(parseGooglePlayReviews)
+const mockReviewService = jest.mocked(ReviewService.getReviews)
 
 describe('/api/reviews', () => {
   beforeEach(() => {
-    mockAppStoreReviews.mockClear()
-    mockGooglePlayReviews.mockClear()
+    mockReviewService.mockClear()
   })
 
   it('returns 400 when appId is missing', async () => {
@@ -53,44 +48,46 @@ describe('/api/reviews', () => {
     expect(data.error).toBe('Invalid platform. Must be "appstore" or "googleplay"')
   })
 
-  it('calls parseAppStoreReviews for appstore platform', async () => {
+  it('calls ReviewService.getReviews for appstore platform', async () => {
     const mockResult = {
       reviews: [],
       totalCount: 0,
       averageRating: 0,
+      fromCache: false,
     }
-    mockAppStoreReviews.mockResolvedValue(mockResult)
+    mockReviewService.mockResolvedValue(mockResult)
 
     const request = new NextRequest('http://localhost:3000/api/reviews?appId=123456&platform=appstore')
     const response = await GET(request)
     
     expect(response.status).toBe(200)
-    expect(mockAppStoreReviews).toHaveBeenCalledWith('123456')
+    expect(mockReviewService).toHaveBeenCalledWith('123456', 'appstore', false)
     
     const data = await response.json()
     expect(data).toEqual(mockResult)
   })
 
-  it('calls parseGooglePlayReviews for googleplay platform', async () => {
+  it('calls ReviewService.getReviews for googleplay platform', async () => {
     const mockResult = {
       reviews: [],
       totalCount: 0,
       averageRating: 0,
+      fromCache: false,
     }
-    mockGooglePlayReviews.mockResolvedValue(mockResult)
+    mockReviewService.mockResolvedValue(mockResult)
 
     const request = new NextRequest('http://localhost:3000/api/reviews?appId=com.example.app&platform=googleplay')
     const response = await GET(request)
     
     expect(response.status).toBe(200)
-    expect(mockGooglePlayReviews).toHaveBeenCalledWith('com.example.app')
+    expect(mockReviewService).toHaveBeenCalledWith('com.example.app', 'googleplay', false)
     
     const data = await response.json()
     expect(data).toEqual(mockResult)
   })
 
-  it('returns 500 when parser throws an error', async () => {
-    mockAppStoreReviews.mockRejectedValue(new Error('Parser failed'))
+  it('returns 500 when ReviewService throws an error', async () => {
+    mockReviewService.mockRejectedValue(new Error('Service failed'))
 
     const request = new NextRequest('http://localhost:3000/api/reviews?appId=123456&platform=appstore')
     const response = await GET(request)

@@ -18,12 +18,17 @@ export interface ParsedReviews {
 }
 
 export interface AnalysisResult {
-  sentiment: 'positive' | 'negative' | 'neutral'
+  sentiment: 'positive' | 'negative' | 'neutral' | 'mixed'
   themes: string[]
   summary: string
   recommendations: string[]
   score: number
   problems: Problem[]
+  appreciatedFeatures: AppreciatedFeature[]
+  featureRequests: FeatureRequest[]
+  reviewsAnalyzed: number
+  shareId?: string
+  isPublic?: boolean
 }
 
 export interface Problem {
@@ -31,6 +36,22 @@ export interface Problem {
   description: string
   severity: 'high' | 'medium' | 'low'
   affectedReviews: number
+  keywords: string[]
+}
+
+export interface AppreciatedFeature {
+  title: string
+  description: string
+  mentionCount: number
+  keywords: string[]
+  averageRating: number
+}
+
+export interface FeatureRequest {
+  title: string
+  description: string
+  urgency: 'high' | 'medium' | 'low'
+  mentionCount: number
   keywords: string[]
 }
 

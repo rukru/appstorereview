@@ -1,134 +1,129 @@
-import axios from 'axios'
-import * as cheerio from 'cheerio'
+// Dynamic import for ES module compatibility
+let gplay: any
+
+async function getGplay() {
+  if (!gplay) {
+    gplay = await import('google-play-scraper')
+    gplay = gplay.default || gplay
+  }
+  return gplay
+}
+import { createHash } from 'crypto'
 import { Review, ParsedReviews } from '@/types'
+
+// Функция для нормализации текста отзыва для сравнения
+function normalizeReviewContent(content: string): string {
+  return content
+    .toLowerCase()
+    .replace(/[^\w\s]/g, '') // Удаляем знаки пунктуации
+    .replace(/\s+/g, ' ') // Нормализуем пробелы
+    .trim()
+    .substring(0, 200) // Берем первые 200 символов для сравнения
+}
 
 export async function parseGooglePlayReviews(
   packageName: string,
-  lang = 'en',
-  country = 'us'
+  lang = 'ru',
+  country = 'ru'
 ): Promise<ParsedReviews> {
   try {
-    // Google Play Store app page
-    const url = `https://play.google.com/store/apps/details?id=${packageName}&hl=${lang}&gl=${country}`
-
-    const response = await axios.get(url, {
-      headers: {
-        'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-        'Accept-Language': 'en-US,en;q=0.9',
-      },
-    })
-
-    const $ = cheerio.load(response.data)
+    console.log(`Fetching Google Play reviews for ${packageName}...`)
+    
+    const gplayLib = await getGplay()
     const reviews: Review[] = []
     let totalRating = 0
-
-    // Find review elements - Google Play uses dynamic content, so we'll look for common patterns
-    $('[data-review-id]').each((index, element) => {
-      const $review = $(element)
-
-      // Extract review data
-      const reviewId = $review.attr('data-review-id') || `googleplay_${index}`
-      const title = $review
-        .find('[class*="review"] h3, [class*="title"]')
-        .first()
-        .text()
-        .trim()
-      const content = $review
-        .find('[class*="review-text"], [class*="content"]')
-        .text()
-        .trim()
-      const author = $review
-        .find('[class*="author"], [class*="name"]')
-        .text()
-        .trim()
-
-      // Extract rating (looking for star ratings)
-      const ratingElement = $review.find(
-        '[role="img"][aria-label*="star"], [class*="rating"]'
-      )
-      let rating = 0
-
-      if (ratingElement.length > 0) {
-        const ariaLabel = ratingElement.attr('aria-label') || ''
-        const ratingMatch = ariaLabel.match(/(\d+)\s*star/i)
-        if (ratingMatch) {
-          rating = parseInt(ratingMatch[1], 10)
+    const seenContentHashes = new Set<string>() // Для предотвращения дубликатов по содержанию
+    
+    // Fetch multiple pages of reviews
+    let allGoogleReviews: any[] = []
+    
+    try {
+      // Fetch first batch of reviews
+      const reviewOptions = {
+        appId: packageName,
+        lang: lang,
+        country: country,
+        sort: gplayLib.sort.NEWEST,
+        num: 50, // Get 50 reviews at a time
+      }
+      
+      console.log('Fetching reviews with options:', reviewOptions)
+      const firstBatch = await gplayLib.reviews(reviewOptions)
+      allGoogleReviews = firstBatch.data || []
+      
+      // Try to get more reviews if we have a next token
+      if (firstBatch.nextPaginationToken && allGoogleReviews.length < 100) {
+        try {
+          const secondBatch = await gplayLib.reviews({
+            ...reviewOptions,
+            nextPaginationToken: firstBatch.nextPaginationToken,
+            num: 50
+          })
+          allGoogleReviews = [...allGoogleReviews, ...(secondBatch.data || [])]
+        } catch (secondError) {
+          console.warn('Could not fetch second batch of reviews:', secondError instanceof Error ? secondError.message : 'Unknown error')
         }
       }
-
-      // Extract date
-      const dateElement = $review.find('[class*="date"], time')
-      const date =
-        dateElement.attr('datetime') ||
-        dateElement.text() ||
-        new Date().toISOString()
-
-      if (content && rating > 0) {
-        reviews.push({
-          id: reviewId,
-          title: title || 'No Title',
-          content: content,
-          rating,
-          author: author || 'Anonymous',
-          date,
-          platform: 'googleplay',
-          appId: packageName,
-        })
-
-        totalRating += rating
-      }
-    })
-
-    // If no reviews found with the above method, try alternative selectors
-    if (reviews.length === 0) {
-      // Try to find reviews in script tags (Google often embeds data in JSON)
-      const scripts = $('script').toArray()
-
-      for (const script of scripts) {
-        const scriptContent = $(script).html() || ''
-
-        // Look for review data patterns in JavaScript
-        const reviewMatches = scriptContent.match(
-          /\["[^"]*",\s*"[^"]*",\s*\d+,/g
-        )
-
-        if (reviewMatches) {
-          reviewMatches.slice(0, 20).forEach((match, index) => {
-            try {
-              const parts = match.replace(/[\[\]]/g, '').split(',')
-              if (parts.length >= 3) {
-                const title = parts[0]?.replace(/"/g, '') || 'No Title'
-                const content = parts[1]?.replace(/"/g, '') || ''
-                const rating = parseInt(parts[2]?.trim() || '0', 10)
-
-                if (content && rating > 0) {
-                  reviews.push({
-                    id: `googleplay_${index}`,
-                    title,
-                    content,
-                    rating,
-                    author: 'Anonymous',
-                    date: new Date().toISOString(),
-                    platform: 'googleplay',
-                    appId: packageName,
-                  })
-
-                  totalRating += rating
-                }
-              }
-            } catch (e) {
-              // Skip malformed entries
-            }
+      
+    } catch (gplayError) {
+      console.error('Google Play scraper error:', gplayError)
+      throw new Error(`Failed to fetch Google Play reviews: ${gplayError instanceof Error ? gplayError.message : 'Unknown error'}`)
+    }
+    
+    console.log(`Fetched ${allGoogleReviews.length} reviews from Google Play`)
+    
+    // Process the reviews
+    for (const gReview of allGoogleReviews) {
+      try {
+        const content = gReview.text || ''
+        const title = gReview.title || content.substring(0, 50) + '...' || 'No Title'
+        const rating = gReview.score || 0
+        const author = gReview.userName || 'Anonymous'
+        const date = gReview.date ? new Date(gReview.date).toISOString() : new Date().toISOString()
+        
+        if (content && rating > 0) {
+          // Создаем хэш нормализованного содержания для проверки дубликатов
+          const normalizedContent = normalizeReviewContent(content)
+          const contentHash = createHash('md5')
+            .update(`${normalizedContent}_${author}_${rating}`)
+            .digest('hex')
+          
+          // Пропускаем дубликаты по содержанию
+          if (seenContentHashes.has(contentHash)) {
+            continue // Skip this review
+          }
+          seenContentHashes.add(contentHash)
+          
+          // Create stable ID
+          const finalId = gReview.id || createHash('md5')
+            .update(`${packageName}_${content}_${author}_${date}_${rating}`)
+            .digest('hex')
+            .substring(0, 16)
+          
+          reviews.push({
+            id: finalId,
+            title: title.trim(),
+            content: content.trim(),
+            rating,
+            author: author || 'Anonymous',
+            date,
+            platform: 'googleplay',
+            appId: packageName,
+            version: gReview.version || undefined,
           })
 
-          break
+          totalRating += rating
         }
+      } catch (reviewError) {
+        console.warn('Error processing individual review:', reviewError)
+        continue
       }
     }
 
     const averageRating = reviews.length > 0 ? totalRating / reviews.length : 0
 
+    console.log(`Successfully processed ${reviews.length} Google Play reviews`)
+    
     return {
       reviews,
       totalCount: reviews.length,
@@ -136,46 +131,35 @@ export async function parseGooglePlayReviews(
     }
   } catch (error) {
     console.error('Error parsing Google Play reviews:', error)
-    throw new Error('Failed to parse Google Play reviews')
+    throw new Error(`Failed to parse Google Play reviews: ${error instanceof Error ? error.message : 'Unknown error'}`)
   }
 }
 
 export async function searchGooglePlayApp(
-  searchTerm: string
-): Promise<Array<{ id: string; name: string }>> {
+  searchTerm: string,
+  country = 'ru'
+): Promise<Array<{ id: string; name: string; bundleId: string }>> {
   try {
-    // This is a simplified search - in production, you might want to use the Google Play API
-    const url = `https://play.google.com/store/search?q=${encodeURIComponent(searchTerm)}&c=apps`
-
-    const response = await axios.get(url, {
-      headers: {
-        'User-Agent':
-          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-      },
+    console.log(`Searching Google Play for: ${searchTerm}`)
+    
+    const gplayLib = await getGplay()
+    
+    const searchResults = await gplayLib.search({
+      term: searchTerm,
+      num: 10,
+      lang: 'ru',
+      country: country,
     })
-
-    const $ = cheerio.load(response.data)
-    const apps: Array<{ id: string; name: string }> = []
-
-    // Find app links in search results
-    $('a[href*="/store/apps/details?id="]').each((index, element) => {
-      if (index >= 10) return false // Limit to 10 results
-
-      const href = $(element).attr('href') || ''
-      const packageMatch = href.match(/id=([^&]+)/)
-      const name = $(element).find('[class*="title"], h3, h4').text().trim()
-
-      if (packageMatch && name) {
-        apps.push({
-          id: packageMatch[1],
-          name: name,
-        })
-      }
-    })
-
-    return apps
+    
+    console.log(`Found ${searchResults.length} apps on Google Play`)
+    
+    return searchResults.map((app: any) => ({
+      id: app.appId,
+      name: app.title,
+      bundleId: app.appId,
+    }))
   } catch (error) {
     console.error('Error searching Google Play:', error)
-    throw new Error('Failed to search Google Play')
+    throw new Error(`Failed to search Google Play: ${error instanceof Error ? error.message : 'Unknown error'}`)
   }
 }

@@ -1,6 +1,7 @@
 'use client'
 
-import { AnalysisResult, Problem } from '@/types'
+import { useState } from 'react'
+import { AnalysisResult, Problem, AppreciatedFeature, FeatureRequest } from '@/types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -15,6 +16,13 @@ import {
   AlertTriangle,
   AlertCircle,
   Info,
+  Heart,
+  Star,
+  Plus,
+  Zap,
+  Share2,
+  Copy,
+  Check,
 } from 'lucide-react'
 
 interface AnalysisPanelProps {
@@ -23,6 +31,7 @@ interface AnalysisPanelProps {
   onAnalyze?: () => void
   onProblemClick?: (problemTitle: string) => void
   selectedProblem?: string | null
+  isPublicView?: boolean
 }
 
 const getSentimentIcon = (sentiment: string) => {
@@ -31,6 +40,8 @@ const getSentimentIcon = (sentiment: string) => {
       return <TrendingUp className="h-4 w-4 text-green-500" />
     case 'negative':
       return <TrendingDown className="h-4 w-4 text-red-500" />
+    case 'mixed':
+      return <Minus className="h-4 w-4 text-orange-500" />
     default:
       return <Minus className="h-4 w-4 text-yellow-500" />
   }
@@ -42,6 +53,8 @@ const getSentimentColor = (sentiment: string) => {
       return 'border-green-200 bg-green-50 text-green-800'
     case 'negative':
       return 'border-red-200 bg-red-50 text-red-800'
+    case 'mixed':
+      return 'border-orange-200 bg-orange-50 text-orange-800'
     default:
       return 'border-yellow-200 bg-yellow-50 text-yellow-800'
   }
@@ -69,13 +82,68 @@ const getSeverityColor = (severity: string) => {
   }
 }
 
+const getUrgencyColor = (urgency: string) => {
+  switch (urgency) {
+    case 'high':
+      return 'border-red-200 bg-red-50 text-red-800'
+    case 'medium':
+      return 'border-yellow-200 bg-yellow-50 text-yellow-800'
+    default:
+      return 'border-green-200 bg-green-50 text-green-800'
+  }
+}
+
+const getUrgencyIcon = (urgency: string) => {
+  switch (urgency) {
+    case 'high':
+      return <Zap className="h-4 w-4 text-red-500" />
+    case 'medium':
+      return <Plus className="h-4 w-4 text-yellow-500" />
+    default:
+      return <Info className="h-4 w-4 text-green-500" />
+  }
+}
+
 export function AnalysisPanel({
   analysis,
   isLoading,
   onAnalyze,
   onProblemClick,
   selectedProblem,
+  isPublicView = false,
 }: AnalysisPanelProps) {
+  const [copyStatus, setCopyStatus] = useState<'idle' | 'copying' | 'copied'>('idle')
+
+  const handleCopyLink = async () => {
+    if (!analysis?.shareId) return
+    
+    setCopyStatus('copying')
+    
+    try {
+      const shareUrl = `${window.location.origin}/analysis/${analysis.shareId}`
+      await navigator.clipboard.writeText(shareUrl)
+      setCopyStatus('copied')
+      
+      setTimeout(() => {
+        setCopyStatus('idle')
+      }, 2000)
+    } catch (err) {
+      console.error('Failed to copy:', err)
+      setCopyStatus('idle')
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea')
+      textArea.value = `${window.location.origin}/analysis/${analysis.shareId}`
+      document.body.appendChild(textArea)
+      textArea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textArea)
+      setCopyStatus('copied')
+      
+      setTimeout(() => {
+        setCopyStatus('idle')
+      }, 2000)
+    }
+  }
   if (!analysis && !isLoading) {
     return (
       <Card>
@@ -130,10 +198,46 @@ export function AnalysisPanel({
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Brain className="h-5 w-5" />
-            AI Analysis Results
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Brain className="h-5 w-5" />
+              AI Analysis Results
+            </CardTitle>
+            {!isPublicView && analysis.shareId && (
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCopyLink}
+                  disabled={copyStatus === 'copying'}
+                  className="flex items-center gap-2"
+                >
+                  {copyStatus === 'copied' ? (
+                    <>
+                      <Check className="h-4 w-4 text-green-500" />
+                      Скопировано!
+                    </>
+                  ) : copyStatus === 'copying' ? (
+                    <>
+                      <RefreshCw className="h-4 w-4 animate-spin" />
+                      Копирование...
+                    </>
+                  ) : (
+                    <>
+                      <Share2 className="h-4 w-4" />
+                      Поделиться
+                    </>
+                  )}
+                </Button>
+                {analysis.isPublic && (
+                  <Badge variant="secondary" className="text-xs">
+                    <Share2 className="h-3 w-3 mr-1" />
+                    Публичный
+                  </Badge>
+                )}
+              </div>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Overall Sentiment & Score */}
@@ -158,16 +262,16 @@ export function AnalysisPanel({
                 <div className="flex-1 bg-gray-200 rounded-full h-2">
                   <div
                     className={`h-2 rounded-full ${
-                      analysis.score >= 70
+                      analysis.score >= 7
                         ? 'bg-green-500'
-                        : analysis.score >= 40
+                        : analysis.score >= 4
                           ? 'bg-yellow-500'
                           : 'bg-red-500'
                     }`}
-                    style={{ width: `${analysis.score}%` }}
+                    style={{ width: `${(analysis.score / 10) * 100}%` }}
                   />
                 </div>
-                <span className="font-bold text-lg">{analysis.score}/100</span>
+                <span className="font-bold text-lg">{analysis.score}/10</span>
               </div>
             </div>
           </div>
@@ -184,6 +288,107 @@ export function AnalysisPanel({
           </div>
         </CardContent>
       </Card>
+
+      {/* Appreciated Features */}
+      {analysis.appreciatedFeatures && analysis.appreciatedFeatures.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Heart className="h-5 w-5 text-pink-500" />
+              Appreciated Features
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {analysis.appreciatedFeatures.map((feature, index) => (
+                <div key={index} className="p-3 rounded-lg border border-pink-200 bg-pink-50">
+                  <div className="flex items-start gap-3">
+                    <Star className="h-4 w-4 text-pink-500 mt-1" />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h5 className="font-semibold text-sm">{feature.title}</h5>
+                        <Badge variant="outline" className="border-pink-200 bg-pink-100 text-pink-800">
+                          {feature.averageRating}★
+                        </Badge>
+                        <Badge variant="secondary" className="text-xs">
+                          {feature.mentionCount} mentions
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        {feature.description}
+                      </p>
+                      <div className="flex flex-wrap gap-1">
+                        {feature.keywords.slice(0, 5).map((keyword, idx) => (
+                          <Badge key={idx} variant="outline" className="text-xs border-pink-200">
+                            {keyword}
+                          </Badge>
+                        ))}
+                        {feature.keywords.length > 5 && (
+                          <Badge variant="outline" className="text-xs border-pink-200">
+                            +{feature.keywords.length - 5} more
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Feature Requests */}
+      {analysis.featureRequests && analysis.featureRequests.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Plus className="h-5 w-5 text-blue-500" />
+              Feature Requests
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {analysis.featureRequests.map((request, index) => (
+                <div key={index} className="p-3 rounded-lg border border-blue-200 bg-blue-50">
+                  <div className="flex items-start gap-3">
+                    {getUrgencyIcon(request.urgency)}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h5 className="font-semibold text-sm">{request.title}</h5>
+                        <Badge
+                          variant="outline"
+                          className={getUrgencyColor(request.urgency)}
+                        >
+                          {request.urgency} priority
+                        </Badge>
+                        <Badge variant="secondary" className="text-xs">
+                          {request.mentionCount} requests
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        {request.description}
+                      </p>
+                      <div className="flex flex-wrap gap-1">
+                        {request.keywords.slice(0, 5).map((keyword, idx) => (
+                          <Badge key={idx} variant="outline" className="text-xs border-blue-200">
+                            {keyword}
+                          </Badge>
+                        ))}
+                        {request.keywords.length > 5 && (
+                          <Badge variant="outline" className="text-xs border-blue-200">
+                            +{request.keywords.length - 5} more
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Themes */}
       <Card>
@@ -215,12 +420,12 @@ export function AnalysisPanel({
               {analysis.problems.map((problem, index) => (
                 <div
                   key={index}
-                  className={`p-3 rounded-lg border cursor-pointer transition-colors ${
-                    selectedProblem === problem.title
+                  className={`p-3 rounded-lg border transition-colors ${
+                    !isPublicView && selectedProblem === problem.title
                       ? 'border-primary bg-primary/5'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                  onClick={() => onProblemClick?.(problem.title)}
+                      : 'border-gray-200'
+                  } ${!isPublicView ? 'cursor-pointer hover:border-gray-300' : ''}`}
+                  onClick={!isPublicView ? () => onProblemClick?.(problem.title) : undefined}
                 >
                   <div className="flex items-start gap-3">
                     {getSeverityIcon(problem.severity)}

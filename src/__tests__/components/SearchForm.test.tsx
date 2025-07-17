@@ -16,6 +16,14 @@ Object.defineProperty(window, 'localStorage', {
   value: localStorageMock
 })
 
+// Mock fetch for SavedApps component
+global.fetch = jest.fn(() =>
+  Promise.resolve({
+    ok: true,
+    json: () => Promise.resolve([]),
+  })
+) as jest.Mock
+
 describe('SearchForm', () => {
   beforeEach(() => {
     mockOnSearch.mockClear()
@@ -23,6 +31,8 @@ describe('SearchForm', () => {
     localStorageMock.setItem.mockClear()
     // Reset localStorage to return null by default
     localStorageMock.getItem.mockReturnValue(null)
+    // Reset fetch mock
+    ;(global.fetch as jest.Mock).mockClear()
   })
 
   it('renders form elements correctly', () => {
@@ -56,7 +66,7 @@ describe('SearchForm', () => {
     await user.click(submitButton)
 
     await waitFor(() => {
-      expect(mockOnSearch).toHaveBeenCalledWith('284882215', 'appstore')
+      expect(mockOnSearch).toHaveBeenCalledWith('284882215', 'appstore', false)
     })
   })
 
@@ -139,5 +149,11 @@ describe('SearchForm', () => {
     expect(screen.getByRole('button', { name: /7 days/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /30 days/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /90 days/i })).toBeInTheDocument()
+  })
+
+  it('shows saved apps component', () => {
+    render(<SearchForm onSearch={mockOnSearch} />)
+    
+    expect(screen.getByText('Saved Apps')).toBeInTheDocument()
   })
 })

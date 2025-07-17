@@ -1,8 +1,11 @@
 {
   "name": "appstorereview",
   "version": "1.0.0",
-  "description": "",
+  "description": "App Store Review Analyzer with AI-powered insights",
   "main": "index.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -14,12 +17,19 @@
     "format:check": "prettier --check .",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate deploy",
+    "db:studio": "prisma studio",
+    "db:seed": "tsx prisma/seed.ts",
+    "postinstall": "prisma generate"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@prisma/client": "^6.11.1",
     "@radix-ui/react-slot": "^1.2.3",
     "@types/node": "^24.0.10",
     "@types/react": "^19.1.8",
@@ -31,10 +41,12 @@
     "clsx": "^2.1.1",
     "eslint": "^9.30.1",
     "eslint-config-next": "^15.3.5",
+    "google-play-scraper": "^10.0.1",
     "lucide-react": "^0.525.0",
     "next": "^15.3.5",
     "openai": "^5.8.2",
     "postcss": "^8.5.6",
+    "prisma": "^6.11.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "tailwind-merge": "^3.3.1",
