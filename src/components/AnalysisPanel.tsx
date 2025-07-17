@@ -132,59 +132,89 @@ export function AnalysisPanel({
       })
       
       if (!makePublicResponse.ok) {
-        throw new Error('Failed to make analysis public')
+        console.error('Failed to make analysis public')
+        // Продолжаем даже если не удалось сделать публичным
       }
       
-      // Теперь копировать ссылку
+      // Создать ссылку
       const shareUrl = `${window.location.origin}/analysis/${analysis.shareId}`
-      await navigator.clipboard.writeText(shareUrl)
-      setCopyStatus('copied')
+      
+      // Попробовать копировать через clipboard API
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        try {
+          await navigator.clipboard.writeText(shareUrl)
+          setCopyStatus('copied')
+        } catch (clipboardErr) {
+          console.log('Clipboard API failed, using fallback')
+          // Fallback для старых браузеров
+          fallbackCopyToClipboard(shareUrl)
+        }
+      } else {
+        // Fallback для старых браузеров
+        fallbackCopyToClipboard(shareUrl)
+      }
       
       // Обновить состояние анализа
       if (analysis) {
         analysis.isPublic = true
       }
       
+      // Сохранить в localStorage для панели
+      saveSharedLink(shareUrl, analysis)
+      
       setTimeout(() => {
         setCopyStatus('idle')
       }, 2000)
+      
     } catch (err) {
       console.error('Failed to copy:', err)
       setCopyStatus('idle')
-      
-      // Fallback for older browsers
-      try {
-        // Попробовать сделать публичным через fallback
-        await fetch(`/api/analysis/${analysis.shareId}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            isPublic: true
-          })
-        })
-        
-        const textArea = document.createElement('textarea')
-        textArea.value = `${window.location.origin}/analysis/${analysis.shareId}`
-        document.body.appendChild(textArea)
-        textArea.select()
-        document.execCommand('copy')
-        document.body.removeChild(textArea)
-        setCopyStatus('copied')
-        
-        // Обновить состояние анализа
-        if (analysis) {
-          analysis.isPublic = true
-        }
-        
-        setTimeout(() => {
-          setCopyStatus('idle')
-        }, 2000)
-      } catch (fallbackErr) {
-        console.error('Fallback copy failed:', fallbackErr)
-        setCopyStatus('idle')
+    }
+  }
+  
+  const fallbackCopyToClipboard = (text: string) => {
+    const textArea = document.createElement('textarea')
+    textArea.value = text
+    textArea.style.position = 'fixed'
+    textArea.style.left = '-999999px'
+    textArea.style.top = '-999999px'
+    document.body.appendChild(textArea)
+    textArea.focus()
+    textArea.select()
+    
+    try {
+      document.execCommand('copy')
+      setCopyStatus('copied')
+    } catch (err) {
+      console.error('Fallback copy failed:', err)
+      setCopyStatus('idle')
+    }
+    
+    document.body.removeChild(textArea)
+  }
+  
+  const saveSharedLink = (url: string, analysis: any) => {
+    try {
+      const savedLinks = JSON.parse(localStorage.getItem('sharedAnalyses') || '[]')
+      const newLink = {
+        shareId: analysis.shareId,
+        url: url,
+        appName: analysis.appName || analysis.appId,
+        platform: analysis.platform || 'unknown',
+        createdAt: new Date().toISOString(),
+        sentiment: analysis.sentiment,
+        score: analysis.score
       }
+      
+      // Добавить новую ссылку в начало массива
+      const updatedLinks = [newLink, ...savedLinks.filter((link: any) => link.shareId !== analysis.shareId)]
+      
+      // Оставить только последние 10 ссылок
+      const limitedLinks = updatedLinks.slice(0, 10)
+      
+      localStorage.setItem('sharedAnalyses', JSON.stringify(limitedLinks))
+    } catch (err) {
+      console.error('Failed to save shared link:', err)
     }
   }
   if (!analysis && !isLoading) {

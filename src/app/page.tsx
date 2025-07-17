@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { SearchForm } from '@/components/SearchForm'
 import { ReviewsList } from '@/components/ReviewsList'
 import { AnalysisPanel } from '@/components/AnalysisPanel'
+import { SavedAnalyses } from '@/components/SavedAnalyses'
 import { Review, ParsedReviews, AnalysisResult, DateFilter } from '@/types'
 
 export default function Home() {
@@ -164,8 +165,8 @@ export default function Home() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Search Form */}
-          <div className="lg:col-span-1">
+          {/* Search Form and Saved Analyses */}
+          <div className="lg:col-span-1 space-y-6">
             <SearchForm 
               onSearch={handleSearch} 
               onAnalyze={handleAnalyze}
@@ -177,6 +178,9 @@ export default function Home() {
               currentAppId={currentAppId || undefined}
               fromCache={fromCache}
             />
+            
+            {/* Saved Analyses Panel */}
+            <SavedAnalyses />
           </div>
 
           {/* Analysis and Reviews */}
