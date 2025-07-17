@@ -139,9 +139,15 @@ const enhancedAnalysisSchema = {
   additionalProperties: false
 }
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
+function getOpenAIClient() {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new Error('The OPENAI_API_KEY environment variable is missing or empty');
+  }
+  return new OpenAI({
+    apiKey,
+  });
+}
 
 export async function analyzeReviews(
   reviews: Review[]
@@ -172,6 +178,7 @@ export async function analyzeReviews(
 
     const userPrompt = `Проанализируй следующие отзывы пользователей о приложении:\n\n${reviewsText}\n\nТвоя задача:\n1. Определи общий sentiment и оценку\n2. Выдели функции за которые пользователи благодарят (appreciatedFeatures)\n3. Найди запросы на новые функции (featureRequests)\n4. Определи проблемы (problems)\n5. Напиши краткое резюме\n6. Определи основные темы и рекомендации\n\nОтвечай строго в JSON формате согласно схеме.`
 
+    const openai = getOpenAIClient();
     const completion = await openai.chat.completions.create({
       model: 'gpt-4.1',
       messages: [
@@ -221,6 +228,7 @@ export async function generateInsights(reviews: Review[]): Promise<string> {
       .map(review => `${review.rating}★ - ${review.title}: ${review.content}`)
       .join('\n\n')
 
+    const openai = getOpenAIClient();
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o',
       messages: [
