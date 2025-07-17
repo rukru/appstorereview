@@ -84,3 +84,4 @@ temp/
 
 # Prisma
 prisma/migrations/migration_lock.toml
+.env*.local
