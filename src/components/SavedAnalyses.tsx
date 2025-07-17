@@ -73,6 +73,10 @@ export function SavedAnalyses() {
     localStorage.removeItem('sharedAnalyses')
   }
 
+  const refreshAnalyses = () => {
+    loadSavedAnalyses()
+  }
+
   const getSentimentIcon = (sentiment: string) => {
     switch (sentiment) {
       case 'positive':

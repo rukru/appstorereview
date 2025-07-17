@@ -193,6 +193,8 @@ export default function Home() {
                 onAnalyze={handleAnalyze}
                 onProblemClick={handleProblemClick}
                 selectedProblem={selectedProblem}
+                platform={currentPlatform || undefined}
+                appName={reviewsData?.appName}
               />
             )}
 

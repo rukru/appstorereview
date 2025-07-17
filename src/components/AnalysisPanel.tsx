@@ -32,6 +32,8 @@ interface AnalysisPanelProps {
   onProblemClick?: (problemTitle: string) => void
   selectedProblem?: string | null
   isPublicView?: boolean
+  platform?: 'appstore' | 'googleplay'
+  appName?: string
 }
 
 const getSentimentIcon = (sentiment: string) => {
@@ -111,6 +113,8 @@ export function AnalysisPanel({
   onProblemClick,
   selectedProblem,
   isPublicView = false,
+  platform,
+  appName,
 }: AnalysisPanelProps) {
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copying' | 'copied'>('idle')
 
@@ -199,12 +203,14 @@ export function AnalysisPanel({
       const newLink = {
         shareId: analysis.shareId,
         url: url,
-        appName: analysis.appName || analysis.appId,
-        platform: analysis.platform || 'unknown',
+        appName: appName || analysis.appName || analysis.appId || 'Unknown App',
+        platform: platform || analysis.platform || 'unknown',
         createdAt: new Date().toISOString(),
         sentiment: analysis.sentiment,
         score: analysis.score
       }
+      
+      console.log('Saving shared link:', newLink) // Debug
       
       // Добавить новую ссылку в начало массива
       const updatedLinks = [newLink, ...savedLinks.filter((link: any) => link.shareId !== analysis.shareId)]
