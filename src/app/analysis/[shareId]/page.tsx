@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
+import Link from 'next/link'
 import { AnalysisPanel } from '@/components/AnalysisPanel'
 import { AnalysisResult } from '@/types'
 
@@ -76,12 +77,12 @@ export default function PublicAnalysisPage() {
           <p className="text-gray-600 dark:text-gray-300 mb-6">
             Возможно, ссылка неверная или анализ был удален.
           </p>
-          <a
+          <Link
             href="/"
             className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             ← На главную
-          </a>
+          </Link>
         </div>
       </div>
     )
@@ -181,12 +182,12 @@ export default function PublicAnalysisPage() {
 
         {/* Footer */}
         <div className="text-center mt-12">
-          <a
+          <Link
             href="/"
             className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             ← Создать свой анализ
-          </a>
+          </Link>
         </div>
       </div>
     </div>
