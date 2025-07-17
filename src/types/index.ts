@@ -15,6 +15,7 @@ export interface ParsedReviews {
   reviews: Review[]
   totalCount: number
   averageRating: number
+  appName?: string
 }
 
 export interface AnalysisResult {

@@ -194,7 +194,7 @@ export default function Home() {
                 onProblemClick={handleProblemClick}
                 selectedProblem={selectedProblem}
                 platform={currentPlatform || undefined}
-                appName={reviewsData?.appName}
+                appName={currentAppId || undefined}
               />
             )}
 
