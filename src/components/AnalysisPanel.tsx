@@ -120,9 +120,30 @@ export function AnalysisPanel({
     setCopyStatus('copying')
     
     try {
+      // Сначала сделать анализ публичным
+      const makePublicResponse = await fetch(`/api/analysis/${analysis.shareId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          isPublic: true
+        })
+      })
+      
+      if (!makePublicResponse.ok) {
+        throw new Error('Failed to make analysis public')
+      }
+      
+      // Теперь копировать ссылку
       const shareUrl = `${window.location.origin}/analysis/${analysis.shareId}`
       await navigator.clipboard.writeText(shareUrl)
       setCopyStatus('copied')
+      
+      // Обновить состояние анализа
+      if (analysis) {
+        analysis.isPublic = true
+      }
       
       setTimeout(() => {
         setCopyStatus('idle')
@@ -130,18 +151,40 @@ export function AnalysisPanel({
     } catch (err) {
       console.error('Failed to copy:', err)
       setCopyStatus('idle')
-      // Fallback for older browsers
-      const textArea = document.createElement('textarea')
-      textArea.value = `${window.location.origin}/analysis/${analysis.shareId}`
-      document.body.appendChild(textArea)
-      textArea.select()
-      document.execCommand('copy')
-      document.body.removeChild(textArea)
-      setCopyStatus('copied')
       
-      setTimeout(() => {
+      // Fallback for older browsers
+      try {
+        // Попробовать сделать публичным через fallback
+        await fetch(`/api/analysis/${analysis.shareId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            isPublic: true
+          })
+        })
+        
+        const textArea = document.createElement('textarea')
+        textArea.value = `${window.location.origin}/analysis/${analysis.shareId}`
+        document.body.appendChild(textArea)
+        textArea.select()
+        document.execCommand('copy')
+        document.body.removeChild(textArea)
+        setCopyStatus('copied')
+        
+        // Обновить состояние анализа
+        if (analysis) {
+          analysis.isPublic = true
+        }
+        
+        setTimeout(() => {
+          setCopyStatus('idle')
+        }, 2000)
+      } catch (fallbackErr) {
+        console.error('Fallback copy failed:', fallbackErr)
         setCopyStatus('idle')
-      }, 2000)
+      }
     }
   }
   if (!analysis && !isLoading) {
