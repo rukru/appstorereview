@@ -24,6 +24,33 @@ interface SavedAppsProps {
   selectedAppId?: string
 }
 
+// Utility functions
+function getPlatformKey(platform: string): 'appstore' | 'googleplay' {
+  return platform === 'APPSTORE' ? 'appstore' : 'googleplay'
+}
+
+function getPlatformIcon(platform: string) {
+  return platform === 'APPSTORE' ? (
+    <Smartphone className="h-4 w-4" />
+  ) : (
+    <Globe className="h-4 w-4" />
+  )
+}
+
+function getPlatformName(platform: string) {
+  return platform === 'APPSTORE' ? 'App Store' : 'Google Play'
+}
+
+function formatDate(dateString: string) {
+  const date = new Date(dateString)
+  return date.toLocaleDateString('ru-RU', {
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
 interface AppDisplayProps {
   app: App
   isSelected: boolean
@@ -99,32 +126,6 @@ function AppDisplay({ app, isSelected, onSelect }: AppDisplayProps) {
       </div>
     </div>
   )
-}
-
-function getPlatformKey(platform: string): 'appstore' | 'googleplay' {
-  return platform === 'APPSTORE' ? 'appstore' : 'googleplay'
-}
-
-function getPlatformIcon(platform: string) {
-  return platform === 'APPSTORE' ? (
-    <Smartphone className="h-4 w-4" />
-  ) : (
-    <Globe className="h-4 w-4" />
-  )
-}
-
-function getPlatformName(platform: string) {
-  return platform === 'APPSTORE' ? 'App Store' : 'Google Play'
-}
-
-function formatDate(dateString: string) {
-  const date = new Date(dateString)
-  return date.toLocaleDateString('ru-RU', {
-    day: 'numeric',
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
 }
 
 export function SavedApps({ onAppSelect, selectedAppId }: SavedAppsProps) {

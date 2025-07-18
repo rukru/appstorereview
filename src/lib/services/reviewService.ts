@@ -60,12 +60,11 @@ export class ReviewService {
   static async getReviews(
     appId: string, 
     platform: 'appstore' | 'googleplay',
-    forceRefresh = false,
-    geoScope: 'single' | 'major' | 'all' | 'americas' | 'europe' | 'asia' | 'english' = 'major'
+    forceRefresh = false
   ): Promise<ReviewServiceResult> {
     const platformEnum = platform === 'appstore' ? Platform.APPSTORE : Platform.GOOGLEPLAY
     
-    // Сначала проверяем, есть ли отзывы в БД для этого приложения с учетом geoScope
+    // Сначала проверяем, есть ли отзывы в БД для этого приложения
     const existingReviews = await prisma.review.findMany({
       where: {
         appId,
@@ -120,39 +119,19 @@ export class ReviewService {
           fromCache: true
         }
       } else {
-        console.log(`⏰ Cache expired or insufficient data, fetching new reviews for ${appId} (${platform}, geoScope: ${geoScope})`)
+        console.log(`⏰ Cache expired or insufficient data, fetching new reviews for ${appId} (${platform})`)
       }
     } else {
-      console.log(`🔄 No existing reviews or force refresh for ${appId} (${platform}, geoScope: ${geoScope})`)
+      console.log(`🔄 No existing reviews or force refresh for ${appId} (${platform})`)
     }
 
-    // Парсим новые отзывы с учетом географической области
-    console.log(`🌍 Starting review collection for ${appId} (${platform}, geoScope: ${geoScope})`)
+    // Парсим новые отзывы со всех регионов
+    console.log(`🌍 Starting review collection for ${appId} (${platform})`)
     let parsedReviews: any
     
     if (platform === 'appstore') {
-      switch (geoScope) {
-        case 'all':
-          console.log('📍 Collecting from ALL regions (15 countries)')
-          parsedReviews = await parseAppStoreReviewsAllRegions(appId)
-          break
-        case 'americas':
-        case 'europe':
-        case 'asia':
-        case 'english':
-          console.log(`📍 Collecting from ${geoScope.toUpperCase()} region`)
-          parsedReviews = await parseAppStoreReviewsFromRegions(appId, [geoScope])
-          break
-        case 'major':
-          console.log('📍 Collecting from MAJOR countries (RU, US, GB, DE, FR, JP)')
-          parsedReviews = await parseAppStoreReviews(appId, ['ru', 'us', 'gb', 'de', 'fr', 'jp'])
-          break
-        case 'single':
-        default:
-          console.log('📍 Collecting from RUSSIA only')
-          parsedReviews = await parseAppStoreReviews(appId, ['ru'])
-          break
-      }
+      console.log('📍 Collecting from ALL regions (15 countries)')
+      parsedReviews = await parseAppStoreReviewsAllRegions(appId)
     } else {
       console.log('📍 Collecting from Google Play (RU)')
       // Google Play всегда использует одну страну (ru)

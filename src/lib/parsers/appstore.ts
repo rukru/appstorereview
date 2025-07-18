@@ -38,7 +38,7 @@ function normalizeReviewContent(content: string): string {
 async function fetchReviewsFromCountry(
   appId: string,
   country: CountryCode,
-  maxPages = 3
+  maxPages = 15
 ): Promise<{ reviews: Review[], errors: string[] }> {
   const reviews: Review[] = []
   const errors: string[] = []
@@ -123,7 +123,7 @@ async function fetchReviewsFromCountry(
       }
       
       // Add small delay between requests
-      await new Promise(resolve => setTimeout(resolve, 300))
+      await new Promise(resolve => setTimeout(resolve, 500))
       
     } catch (pageError) {
       const errorMsg = `Failed to fetch page ${page} from ${country}: ${pageError instanceof Error ? pageError.message : 'Unknown error'}`
@@ -156,7 +156,7 @@ export async function parseAppStoreReviews(
       const batch = countries.slice(i, i + batchSize)
       
       const batchPromises = batch.map(country => 
-        fetchReviewsFromCountry(appId, country, 3) // 3 pages per country
+        fetchReviewsFromCountry(appId, country, 15) // 15 pages per country
       )
       
       const batchResults = await Promise.allSettled(batchPromises)

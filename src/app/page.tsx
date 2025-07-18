@@ -23,8 +23,7 @@ export default function Home() {
   const handleSearch = async (
     appId: string,
     platform: 'appstore' | 'googleplay',
-    forceRefresh = false,
-    geoScope = 'major'
+    forceRefresh = false
   ) => {
     setIsLoadingReviews(true)
     setReviews([])
@@ -37,8 +36,7 @@ export default function Home() {
       const params = new URLSearchParams({
         appId,
         platform,
-        ...(forceRefresh && { forceRefresh: 'true' }),
-        ...(platform === 'appstore' && { geoScope })
+        ...(forceRefresh && { forceRefresh: 'true' })
       })
       const url = `/api/reviews?${params.toString()}`
       const response = await fetch(url)

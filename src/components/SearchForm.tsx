@@ -5,12 +5,12 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Search, Smartphone, Globe, Brain, Calendar, MapPin } from 'lucide-react'
+import { Search, Smartphone, Globe, Brain, Calendar } from 'lucide-react'
 import { DateFilter } from '@/types'
 import { SavedApps } from './SavedApps'
 
 interface SearchFormProps {
-  onSearch: (appId: string, platform: 'appstore' | 'googleplay', forceRefresh?: boolean, geoScope?: string) => void
+  onSearch: (appId: string, platform: 'appstore' | 'googleplay', forceRefresh?: boolean) => void
   onAnalyze?: () => void
   isLoading?: boolean
   isAnalyzing?: boolean
@@ -26,22 +26,17 @@ export function SearchForm({ onSearch, onAnalyze, isLoading, isAnalyzing, hasRev
   const [platform, setPlatform] = useState<'appstore' | 'googleplay'>(
     'appstore'
   )
-  const [geoScope, setGeoScope] = useState<'single' | 'major' | 'all' | 'americas' | 'europe' | 'asia' | 'english'>('major')
 
   // Load saved data from localStorage on component mount
   useEffect(() => {
     const savedAppId = localStorage.getItem('lastAppId')
     const savedPlatform = localStorage.getItem('lastPlatform') as 'appstore' | 'googleplay'
-    const savedGeoScope = localStorage.getItem('lastGeoScope') as 'single' | 'major' | 'all' | 'americas' | 'europe' | 'asia' | 'english'
     
     if (savedAppId) {
       setAppId(savedAppId)
     }
     if (savedPlatform) {
       setPlatform(savedPlatform)
-    }
-    if (savedGeoScope) {
-      setGeoScope(savedGeoScope)
     }
   }, [])
 
@@ -51,9 +46,8 @@ export function SearchForm({ onSearch, onAnalyze, isLoading, isAnalyzing, hasRev
       // Save to localStorage before submitting
       localStorage.setItem('lastAppId', appId.trim())
       localStorage.setItem('lastPlatform', platform)
-      localStorage.setItem('lastGeoScope', geoScope)
       
-      onSearch(appId.trim(), platform, false, geoScope)
+      onSearch(appId.trim(), platform, false)
     }
   }
 
@@ -61,11 +55,6 @@ export function SearchForm({ onSearch, onAnalyze, isLoading, isAnalyzing, hasRev
     setPlatform(newPlatform)
     // Save platform change immediately
     localStorage.setItem('lastPlatform', newPlatform)
-  }
-
-  const handleGeoScopeChange = (newGeoScope: 'single' | 'major' | 'all' | 'americas' | 'europe' | 'asia' | 'english') => {
-    setGeoScope(newGeoScope)
-    localStorage.setItem('lastGeoScope', newGeoScope)
   }
 
   const handleAppSelect = (selectedAppId: string, selectedPlatform: 'appstore' | 'googleplay') => {
@@ -77,7 +66,7 @@ export function SearchForm({ onSearch, onAnalyze, isLoading, isAnalyzing, hasRev
     localStorage.setItem('lastPlatform', selectedPlatform)
     
     // Trigger search
-    onSearch(selectedAppId, selectedPlatform, false, geoScope)
+    onSearch(selectedAppId, selectedPlatform, false)
   }
 
   return (
@@ -170,83 +159,6 @@ export function SearchForm({ onSearch, onAnalyze, isLoading, isAnalyzing, hasRev
             )}
           </div>
           
-          {/* Geographic Scope - only for App Store */}
-          {platform === 'appstore' && (
-            <div className="space-y-2">
-              <label className="text-sm font-medium flex items-center gap-2">
-                <MapPin className="h-4 w-4" />
-                Geographic Scope
-              </label>
-              <div className="grid grid-cols-2 gap-2">
-                <Button
-                  type="button"
-                  variant={geoScope === 'single' ? 'default' : 'outline'}
-                  onClick={() => handleGeoScopeChange('single')}
-                  size="sm"
-                >
-                  🇷🇺 Russia Only
-                </Button>
-                <Button
-                  type="button"
-                  variant={geoScope === 'major' ? 'default' : 'outline'}
-                  onClick={() => handleGeoScopeChange('major')}
-                  size="sm"
-                >
-                  🌟 Major Countries
-                </Button>
-                <Button
-                  type="button"
-                  variant={geoScope === 'english' ? 'default' : 'outline'}
-                  onClick={() => handleGeoScopeChange('english')}
-                  size="sm"
-                >
-                  🇺🇸 English Speaking
-                </Button>
-                <Button
-                  type="button"
-                  variant={geoScope === 'europe' ? 'default' : 'outline'}
-                  onClick={() => handleGeoScopeChange('europe')}
-                  size="sm"
-                >
-                  🇪🇺 Europe
-                </Button>
-                <Button
-                  type="button"
-                  variant={geoScope === 'americas' ? 'default' : 'outline'}
-                  onClick={() => handleGeoScopeChange('americas')}
-                  size="sm"
-                >
-                  🌎 Americas
-                </Button>
-                <Button
-                  type="button"
-                  variant={geoScope === 'asia' ? 'default' : 'outline'}
-                  onClick={() => handleGeoScopeChange('asia')}
-                  size="sm"
-                >
-                  🌏 Asia
-                </Button>
-                <Button
-                  type="button"
-                  variant={geoScope === 'all' ? 'default' : 'outline'}
-                  onClick={() => handleGeoScopeChange('all')}
-                  size="sm"
-                  className="col-span-2"
-                >
-                  🌍 All Regions
-                </Button>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {geoScope === 'single' && 'Only Russian App Store reviews'}
-                {geoScope === 'major' && 'RU, US, GB, DE, FR, JP - Most active regions'}
-                {geoScope === 'english' && 'US, GB, AU, CA - English speaking countries'}
-                {geoScope === 'europe' && 'GB, DE, FR, IT, ES, RU - European markets'}
-                {geoScope === 'americas' && 'US, CA, BR, MX - North & South America'}
-                {geoScope === 'asia' && 'JP, KR, IN, CN - Asian markets'}
-                {geoScope === 'all' && 'All 15 major geographic regions worldwide'}
-              </p>
-            </div>
-          )}
         </form>
 
         {/* Date Filter */}

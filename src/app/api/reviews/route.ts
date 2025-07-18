@@ -7,8 +7,6 @@ export async function GET(request: NextRequest) {
     const appId = searchParams.get('appId')
     const platform = searchParams.get('platform') as 'appstore' | 'googleplay'
     const forceRefresh = searchParams.get('forceRefresh') === 'true'
-    const geoScope = searchParams.get('geoScope') as 'single' | 'major' | 'all' | 'americas' | 'europe' | 'asia' | 'english' || 'major'
-
     if (!appId || !platform) {
       return NextResponse.json(
         { error: 'Missing required parameters: appId and platform' },
@@ -23,20 +21,9 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Validate geoScope for App Store
-    if (platform === 'appstore') {
-      const validGeoScopes = ['single', 'major', 'all', 'americas', 'europe', 'asia', 'english']
-      if (!validGeoScopes.includes(geoScope)) {
-        return NextResponse.json(
-          { error: `Invalid geoScope. Must be one of: ${validGeoScopes.join(', ')}` },
-          { status: 400 }
-        )
-      }
-    }
+    console.log(`📍 Fetching reviews for ${appId} (${platform}) from all regions`)
 
-    console.log(`📍 Fetching reviews for ${appId} (${platform}) with geo scope: ${geoScope}`)
-
-    const result = await ReviewService.getReviews(appId, platform, forceRefresh, geoScope)
+    const result = await ReviewService.getReviews(appId, platform, forceRefresh)
 
     return NextResponse.json({
       reviews: result.reviews,
