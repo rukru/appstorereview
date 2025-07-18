@@ -69,16 +69,6 @@ export class ReviewService {
       where: {
         appId,
         platform: platformEnum,
-        // Для App Store учитываем geoScope, для Google Play - игнорируем
-        // ВАЖНО: Для совместимости с существующими данными (которые имеют geoScope: null)
-        ...(platform === 'appstore' && geoScope !== 'all' ? { 
-          OR: [
-            { geoScope },
-            { geoScope: null } // Старые данные без geoScope
-          ]
-        } : platform === 'appstore' && geoScope === 'all' ? {
-          // Для 'all' - берем все отзывы независимо от geoScope
-        } : {})
       },
       orderBy: { date: 'desc' }
     })
@@ -88,23 +78,17 @@ export class ReviewService {
       const latestReview = existingReviews[0]
       const cacheThreshold = new Date(Date.now() - 2 * 60 * 60 * 1000) // 2 часа (увеличен интервал)
       
-      console.log(`🔍 Found ${existingReviews.length} existing reviews for ${appId} (${platform}, geoScope: ${geoScope})`)
+      console.log(`🔍 Found ${existingReviews.length} existing reviews for ${appId} (${platform})`)
       console.log(`📅 Latest review created: ${latestReview.createdAt}, threshold: ${cacheThreshold}`)
       
-      // Для обратной совместимости: если у нас есть достаточно отзывов с geoScope: null,
-      // и запрашиваем major/single/all - используем кэш
-      const hasLegacyData = existingReviews.some(r => r.geoScope === null)
-      const isCompatibleScope = ['major', 'single', 'all'].includes(geoScope)
-      
       // Если последний отзыв был добавлен недавно, возвращаем кэш
-      // Для legacy данных (geoScope: null) - всегда используем кэш, если есть достаточно отзывов
-      const shouldUseCache = latestReview.createdAt >= cacheThreshold || 
-                            (hasLegacyData && isCompatibleScope && existingReviews.length >= 50)
+      // Для legacy данных - всегда используем кэш, если есть достаточно отзывов
+      const shouldUseCache = latestReview.createdAt >= cacheThreshold || existingReviews.length >= 50
       
-      console.log(`🔄 Cache decision: shouldUseCache=${shouldUseCache}, hasLegacyData=${hasLegacyData}, isCompatibleScope=${isCompatibleScope}, reviewCount=${existingReviews.length}`)
+      console.log(`🔄 Cache decision: shouldUseCache=${shouldUseCache}, reviewCount=${existingReviews.length}`)
       
       if (shouldUseCache) {
-        console.log(`📋 Loading ${existingReviews.length} reviews from cache for ${appId} (${platform}, geoScope: ${geoScope})`)
+        console.log(`📋 Loading ${existingReviews.length} reviews from cache for ${appId} (${platform})`)
         
         const totalRating = existingReviews.reduce((sum, review) => sum + review.rating, 0)
         
@@ -144,23 +128,13 @@ export class ReviewService {
     await this.saveApp(appId, platformEnum)
     
     // Только сохраняем новые отзывы (не дублируем существующие)
-    const newReviews = await this.saveReviews(appId, platformEnum, parsedReviews.reviews, geoScope)
+    const newReviews = await this.saveReviews(appId, platformEnum, parsedReviews.reviews)
     
-    // Получаем все отзывы из БД (включая старые и новые) с учетом geoScope
+    // Получаем все отзывы из БД (включая старые и новые)
     const allReviews = await prisma.review.findMany({
       where: { 
         appId, 
         platform: platformEnum,
-        // Для App Store учитываем geoScope, для Google Play - игнорируем
-        // ВАЖНО: Для совместимости с существующими данными (которые имеют geoScope: null)
-        ...(platform === 'appstore' && geoScope !== 'all' ? { 
-          OR: [
-            { geoScope },
-            { geoScope: null } // Старые данные без geoScope
-          ]
-        } : platform === 'appstore' && geoScope === 'all' ? {
-          // Для 'all' - берем все отзывы независимо от geoScope
-        } : {})
       },
       orderBy: { date: 'desc' }
     })
@@ -199,8 +173,7 @@ export class ReviewService {
   private static async saveReviews(
     appId: string, 
     platform: Platform, 
-    reviews: any[],
-    geoScope?: string
+    reviews: any[]
   ): Promise<number> {
     let newReviewsCount = 0
     
@@ -225,7 +198,7 @@ export class ReviewService {
             date: new Date(review.date),
             version: review.version,
             helpful: review.helpful,
-            geoScope: platform === 'APPSTORE' ? geoScope : null
+            geoScope: platform === 'APPSTORE' ? 'all' : null
           },
           update: {} // Не обновляем существующие отзывы
         })

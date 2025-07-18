@@ -146,7 +146,7 @@ export function SearchForm({ onSearch, onAnalyze, isLoading, isAnalyzing, hasRev
                 variant="outline" 
                 disabled={isLoading} 
                 className="w-full"
-                onClick={() => onSearch(currentAppId, platform, true, geoScope)}
+                onClick={() => onSearch(currentAppId, platform, true)}
               >
                 Force Refresh
               </Button>

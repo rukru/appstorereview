@@ -18,6 +18,10 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
+    "test:appstore": "npx tsx scripts/test-appstore-parser.ts",
+    "test:quick": "npx tsx scripts/quick-test.ts",
+    "test:validate": "npx tsx scripts/validate-setup.ts",
+    "test:issues": "npx tsx scripts/test-specific-issues.ts",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
@@ -62,6 +66,7 @@
     "jest": "^30.0.4",
     "jest-environment-jsdom": "^30.0.4",
     "prettier": "^3.6.2",
-    "tailwindcss": "^3.4.17"
+    "tailwindcss": "^3.4.17",
+    "tsx": "^4.19.2"
   }
 }
