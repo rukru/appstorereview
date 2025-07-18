@@ -124,8 +124,8 @@ export function SearchForm({ onSearch, onAnalyze, isLoading, isAnalyzing, hasRev
               onChange={e => setAppId(e.target.value)}
               placeholder={
                 platform === 'appstore'
-                  ? 'e.g., 284882215 (for Facebook)'
-                  : 'e.g., com.facebook.katana'
+                  ? 'Enter App Store ID'
+                  : 'Enter package name'
               }
               required
             />
@@ -317,33 +317,6 @@ export function SearchForm({ onSearch, onAnalyze, isLoading, isAnalyzing, hasRev
           </div>
         )}
 
-        <div className="mt-6 space-y-3">
-          <h4 className="text-sm font-medium">Popular Apps for Testing:</h4>
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Badge variant="outline">App Store RU</Badge>
-              <span className="text-sm">Telegram: 686449807</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline">App Store RU</Badge>
-              <span className="text-sm">VK: 564177498</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline">App Store RU</Badge>
-              <span className="text-sm">Яндекс.Карты: 313877526</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline">Google Play</Badge>
-              <span className="text-sm">WhatsApp: com.whatsapp</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline">Google Play</Badge>
-              <span className="text-sm">
-                YouTube: com.google.android.youtube
-              </span>
-            </div>
-          </div>
-        </div>
 
         {/* Saved Apps */}
         <div className="mt-6">

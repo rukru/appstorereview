@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Smartphone, Globe, Calendar, BarChart3, Trash2 } from 'lucide-react'
+import { useAppInfo } from '@/hooks/useAppInfo'
 
 interface App {
   id: string
@@ -21,6 +22,87 @@ interface App {
 interface SavedAppsProps {
   onAppSelect: (appId: string, platform: 'appstore' | 'googleplay') => void
   selectedAppId?: string
+}
+
+interface AppDisplayProps {
+  app: App
+  isSelected: boolean
+  onSelect: () => void
+}
+
+function AppDisplay({ app, isSelected, onSelect }: AppDisplayProps) {
+  const { appInfo, loading } = useAppInfo(app.appId, getPlatformKey(app.platform))
+  
+  return (
+    <div
+      className={`p-3 rounded-lg border cursor-pointer transition-colors ${
+        isSelected 
+          ? 'border-primary bg-primary/5' 
+          : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+      }`}
+      onClick={onSelect}
+    >
+      <div className="flex items-start gap-3">
+        {/* App Icon */}
+        <div className="flex-shrink-0">
+          {loading ? (
+            <div className="w-10 h-10 bg-gray-200 rounded-lg animate-pulse"></div>
+          ) : appInfo?.icon ? (
+            <img 
+              src={appInfo.icon} 
+              alt={appInfo.name || app.name || app.appId}
+              className="w-10 h-10 rounded-lg"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none'
+                e.currentTarget.nextElementSibling?.setAttribute('style', 'display: flex')
+              }}
+            />
+          ) : null}
+          
+          {/* Fallback Icon */}
+          <div 
+            className="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center"
+            style={{ display: appInfo?.icon ? 'none' : 'flex' }}
+          >
+            {getPlatformIcon(app.platform)}
+          </div>
+        </div>
+        
+        {/* App Info */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-xs font-medium text-muted-foreground">
+              {getPlatformName(app.platform)}
+            </span>
+          </div>
+          
+          <div className="font-semibold text-sm truncate mb-1">
+            {appInfo?.name || app.name || `App ID: ${app.appId}`}
+          </div>
+          
+          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1">
+              <Calendar className="h-3 w-3" />
+              {formatDate(app.updatedAt)}
+            </span>
+          </div>
+          
+          <div className="flex items-center gap-2 mt-2">
+            <Badge variant="secondary" className="text-xs">
+              {app._count.reviews} reviews
+            </Badge>
+            <Badge variant="outline" className="text-xs">
+              {app._count.analyses} analyses
+            </Badge>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function getPlatformKey(platform: string): 'appstore' | 'googleplay' {
+  return platform === 'APPSTORE' ? 'appstore' : 'googleplay'
 }
 
 export function SavedApps({ onAppSelect, selectedAppId }: SavedAppsProps) {
@@ -66,10 +148,6 @@ export function SavedApps({ onAppSelect, selectedAppId }: SavedAppsProps) {
 
   const getPlatformName = (platform: string) => {
     return platform === 'APPSTORE' ? 'App Store' : 'Google Play'
-  }
-
-  const getPlatformKey = (platform: string): 'appstore' | 'googleplay' => {
-    return platform === 'APPSTORE' ? 'appstore' : 'googleplay'
   }
 
   if (isLoading) {
@@ -122,53 +200,14 @@ export function SavedApps({ onAppSelect, selectedAppId }: SavedAppsProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
-        {apps.map((app) => {
-          const isSelected = selectedAppId === app.appId
-          return (
-            <div
-              key={app.id}
-              className={`p-3 rounded-lg border cursor-pointer transition-colors ${
-                isSelected 
-                  ? 'border-primary bg-primary/5' 
-                  : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-              }`}
-              onClick={() => onAppSelect(app.appId, getPlatformKey(app.platform))}
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    {getPlatformIcon(app.platform)}
-                    <span className="text-xs font-medium text-muted-foreground">
-                      {getPlatformName(app.platform)}
-                    </span>
-                  </div>
-                  
-                  <div className="font-semibold text-sm truncate mb-1">
-                    {app.name || `App ID: ${app.appId}`}
-                  </div>
-                  
-                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <Calendar className="h-3 w-3" />
-                      {formatDate(app.updatedAt)}
-                    </span>
-                  </div>
-                  
-                  <div className="flex items-center gap-2 mt-2">
-                    <Badge variant="secondary" className="text-xs">
-                      {app._count.reviews} reviews
-                    </Badge>
-                    {app._count.analyses > 0 && (
-                      <Badge variant="outline" className="text-xs">
-                        {app._count.analyses} analyses
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )
-        })}
+        {apps.map((app) => (
+          <AppDisplay
+            key={app.id}
+            app={app}
+            isSelected={selectedAppId === app.appId}
+            onSelect={() => onAppSelect(app.appId, getPlatformKey(app.platform))}
+          />
+        ))}
         
         <Button
           variant="outline"

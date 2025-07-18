@@ -204,6 +204,7 @@ export function AnalysisPanel({
         shareId: analysis.shareId,
         url: url,
         appName: appName || analysis.appName || analysis.appId || 'Unknown App',
+        appId: appName || analysis.appId || analysis.shareId, // Используем appName как appId, если доступно
         platform: platform || analysis.platform || 'unknown',
         createdAt: new Date().toISOString(),
         sentiment: analysis.sentiment,

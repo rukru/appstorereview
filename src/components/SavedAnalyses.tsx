@@ -13,17 +13,68 @@ import {
   Star,
   TrendingUp,
   TrendingDown,
-  Minus
+  Minus,
+  Smartphone,
+  Globe
 } from 'lucide-react'
+import { useAppInfo } from '@/hooks/useAppInfo'
 
 interface SavedAnalysis {
   shareId: string
   url: string
   appName: string
+  appId: string
   platform: string
   createdAt: string
   sentiment: string
   score: number
+}
+
+interface AppInfoDisplayProps {
+  appId: string
+  platform: string
+  fallbackName: string
+}
+
+function AppInfoDisplay({ appId, platform, fallbackName }: AppInfoDisplayProps) {
+  const { appInfo, loading } = useAppInfo(appId, platform)
+  
+  if (loading) {
+    return (
+      <div className="flex items-center gap-2">
+        <div className="w-8 h-8 bg-gray-200 rounded-lg animate-pulse"></div>
+        <div>
+          <div className="w-20 h-4 bg-gray-200 rounded animate-pulse"></div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      {appInfo?.icon ? (
+        <img 
+          src={appInfo.icon} 
+          alt={appInfo.name}
+          className="w-8 h-8 rounded-lg"
+          onError={(e) => {
+            e.currentTarget.style.display = 'none'
+          }}
+        />
+      ) : (
+        <div className="w-8 h-8 bg-gray-200 rounded-lg flex items-center justify-center">
+          {platform === 'appstore' ? (
+            <Smartphone className="w-4 h-4 text-gray-500" />
+          ) : (
+            <Globe className="w-4 h-4 text-gray-500" />
+          )}
+        </div>
+      )}
+      <div>
+        <h4 className="font-semibold text-sm">{appInfo?.name || fallbackName}</h4>
+      </div>
+    </div>
+  )
 }
 
 export function SavedAnalyses() {
@@ -158,8 +209,12 @@ export function SavedAnalyses() {
             <div key={analysis.shareId} className="p-3 border rounded-lg bg-gray-50">
               <div className="flex items-start justify-between mb-2">
                 <div className="flex-1">
-                  <h4 className="font-semibold text-sm">{analysis.appName}</h4>
-                  <div className="flex items-center gap-2 mt-1">
+                  <AppInfoDisplay 
+                    appId={analysis.appId || analysis.appName}
+                    platform={analysis.platform}
+                    fallbackName={analysis.appName}
+                  />
+                  <div className="flex items-center gap-2 mt-2">
                     <Badge variant="secondary" className="text-xs">
                       {getPlatformLabel(analysis.platform)}
                     </Badge>
