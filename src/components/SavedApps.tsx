@@ -117,6 +117,16 @@ function getPlatformName(platform: string) {
   return platform === 'APPSTORE' ? 'App Store' : 'Google Play'
 }
 
+function formatDate(dateString: string) {
+  const date = new Date(dateString)
+  return date.toLocaleDateString('ru-RU', {
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
 export function SavedApps({ onAppSelect, selectedAppId }: SavedAppsProps) {
   const [apps, setApps] = useState<App[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -140,15 +150,6 @@ export function SavedApps({ onAppSelect, selectedAppId }: SavedAppsProps) {
     }
   }
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString('ru-RU', {
-      day: 'numeric',
-      month: 'short',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  }
 
 
   if (isLoading) {
