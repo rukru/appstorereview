@@ -105,6 +105,18 @@ function getPlatformKey(platform: string): 'appstore' | 'googleplay' {
   return platform === 'APPSTORE' ? 'appstore' : 'googleplay'
 }
 
+function getPlatformIcon(platform: string) {
+  return platform === 'APPSTORE' ? (
+    <Smartphone className="h-4 w-4" />
+  ) : (
+    <Globe className="h-4 w-4" />
+  )
+}
+
+function getPlatformName(platform: string) {
+  return platform === 'APPSTORE' ? 'App Store' : 'Google Play'
+}
+
 export function SavedApps({ onAppSelect, selectedAppId }: SavedAppsProps) {
   const [apps, setApps] = useState<App[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -138,17 +150,6 @@ export function SavedApps({ onAppSelect, selectedAppId }: SavedAppsProps) {
     })
   }
 
-  const getPlatformIcon = (platform: string) => {
-    return platform === 'APPSTORE' ? (
-      <Smartphone className="h-4 w-4" />
-    ) : (
-      <Globe className="h-4 w-4" />
-    )
-  }
-
-  const getPlatformName = (platform: string) => {
-    return platform === 'APPSTORE' ? 'App Store' : 'Google Play'
-  }
 
   if (isLoading) {
     return (
