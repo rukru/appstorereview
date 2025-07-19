@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { AppSearchCombobox } from './AppSearchCombobox'
 import { 
   Search, 
   Smartphone, 
@@ -11,9 +12,10 @@ import {
   Brain, 
   Calendar,
   RotateCcw,
-  Settings
+  Settings,
+  ArrowUpDown
 } from 'lucide-react'
-import { DateFilter } from '@/types'
+import { DateFilter, SearchableApp } from '@/types'
 
 interface SearchHeaderProps {
   onSearch: (appId: string, platform: 'appstore' | 'googleplay', forceRefresh?: boolean) => void
@@ -41,6 +43,7 @@ export function SearchHeader({
   const [appId, setAppId] = useState('')
   const [platform, setPlatform] = useState<'appstore' | 'googleplay'>('appstore')
   const [showSettings, setShowSettings] = useState(false)
+  const [searchMode, setSearchMode] = useState<'manual' | 'search'>('search')
 
   useEffect(() => {
     const savedAppId = localStorage.getItem('lastAppId')
@@ -62,6 +65,13 @@ export function SearchHeader({
   const handlePlatformChange = (newPlatform: 'appstore' | 'googleplay') => {
     setPlatform(newPlatform)
     localStorage.setItem('lastPlatform', newPlatform)
+  }
+
+  const handleAppSelect = (app: SearchableApp) => {
+    setAppId(app.id)
+    localStorage.setItem('lastAppId', app.id)
+    localStorage.setItem('lastPlatform', app.platform)
+    onSearch(app.id, app.platform, false)
   }
 
   return (
@@ -92,15 +102,36 @@ export function SearchHeader({
             </Button>
           </div>
 
-          {/* App ID Input */}
+          {/* Search Mode Toggle */}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setSearchMode(searchMode === 'search' ? 'manual' : 'search')}
+            className="h-8 px-3"
+            title={searchMode === 'search' ? 'Switch to manual ID entry' : 'Switch to app search'}
+          >
+            <ArrowUpDown className="h-3 w-3 mr-1" />
+            {searchMode === 'search' ? 'Search' : 'Manual'}
+          </Button>
+
+          {/* App Search or ID Input */}
           <div className="flex-1 min-w-64">
-            <Input
-              value={appId}
-              onChange={e => setAppId(e.target.value)}
-              placeholder={platform === 'appstore' ? 'App Store ID (e.g. 1624701477)' : 'Package name (e.g. com.example.app)'}
-              className="h-8 text-sm"
-              required
-            />
+            {searchMode === 'search' ? (
+              <AppSearchCombobox
+                platform={platform}
+                onAppSelect={handleAppSelect}
+                placeholder={`Search ${platform === 'appstore' ? 'App Store' : 'Google Play'} apps...`}
+              />
+            ) : (
+              <Input
+                value={appId}
+                onChange={e => setAppId(e.target.value)}
+                placeholder={platform === 'appstore' ? 'App Store ID (e.g. 1624701477)' : 'Package name (e.g. com.example.app)'}
+                className="h-8 text-sm"
+                required
+              />
+            )}
           </div>
 
           {/* Search Button */}

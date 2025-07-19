@@ -57,3 +57,22 @@ export interface FeatureRequest {
 }
 
 export type DateFilter = 'all' | '7days' | '30days' | '90days'
+
+export interface SearchableApp {
+  id: string
+  name: string
+  developer: string
+  icon: string
+  category: string
+  rating: number
+  reviewCount: number
+  description: string
+  platform: 'appstore' | 'googleplay'
+}
+
+export interface AppSearchResult {
+  results: SearchableApp[]
+  query: string
+  platform: 'appstore' | 'googleplay'
+  total: number
+}
