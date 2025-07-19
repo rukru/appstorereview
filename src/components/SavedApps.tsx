@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -75,14 +76,13 @@ function AppDisplay({ app, isSelected, onSelect }: AppDisplayProps) {
           {loading ? (
             <div className="w-10 h-10 bg-gray-200 rounded-lg animate-pulse"></div>
           ) : appInfo?.icon ? (
-            <img 
+            <Image 
               src={appInfo.icon} 
               alt={appInfo.name || app.name || app.appId}
+              width={40}
+              height={40}
               className="w-10 h-10 rounded-lg"
-              onError={(e) => {
-                e.currentTarget.style.display = 'none'
-                e.currentTarget.nextElementSibling?.setAttribute('style', 'display: flex')
-              }}
+              unoptimized
             />
           ) : null}
           

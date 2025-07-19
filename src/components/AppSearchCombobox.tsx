@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import Image from 'next/image'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -27,7 +28,7 @@ export function AppSearchCombobox({
   const [showResults, setShowResults] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(-1)
   
-  const searchTimeoutRef = useRef<NodeJS.Timeout>()
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const resultsRef = useRef<HTMLDivElement>(null)
 
@@ -173,13 +174,13 @@ export function AppSearchCombobox({
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <img 
+                  <Image 
                     src={app.icon} 
                     alt={app.name}
+                    width={40}
+                    height={40}
                     className="w-10 h-10 rounded-lg flex-shrink-0"
-                    onError={(e) => {
-                      e.currentTarget.style.display = 'none'
-                    }}
+                    unoptimized
                   />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
@@ -220,7 +221,7 @@ export function AppSearchCombobox({
       {showResults && !isSearching && query.length >= 2 && results.length === 0 && (
         <Card className="absolute top-full left-0 right-0 mt-1 z-50 shadow-lg border">
           <div className="p-4 text-center text-sm text-gray-500">
-            No apps found for "{query}"
+            No apps found for &quot;{query}&quot;
           </div>
         </Card>
       )}

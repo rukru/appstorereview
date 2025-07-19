@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { search as playStoreSearch } from 'google-play-scraper'
+const gplay = require('google-play-scraper')
 
 interface AppStoreApp {
   trackId: number
@@ -12,16 +12,7 @@ interface AppStoreApp {
   description: string
 }
 
-interface GooglePlayApp {
-  appId: string
-  title: string
-  developer: string
-  icon: string
-  genre: string
-  score: number
-  reviews: number
-  summary: string
-}
+// Google Play app interface - using any for now due to library type issues
 
 export async function GET(request: NextRequest) {
   try {
@@ -66,21 +57,21 @@ export async function GET(request: NextRequest) {
     } else {
       // Google Play Search
       try {
-        const apps = await playStoreSearch({
+        const apps = await gplay.default.search({
           term: query,
           num: limit,
           country: 'us',
           lang: 'en'
         })
 
-        results = apps.map((app: GooglePlayApp) => ({
+        results = apps.map((app: any) => ({
           id: app.appId,
           name: app.title,
           developer: app.developer,
           icon: app.icon,
-          category: app.genre,
+          category: app.genre || 'Unknown',
           rating: app.score || 0,
-          reviewCount: app.reviews || 0,
+          reviewCount: 0, // Reviews count not available in search results
           description: app.summary || '',
           platform: 'googleplay'
         }))

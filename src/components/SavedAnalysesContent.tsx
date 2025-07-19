@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { 
@@ -52,13 +53,13 @@ function AppInfoDisplay({ appId, platform, fallbackName }: AppInfoDisplayProps) 
   return (
     <div className="flex items-center gap-2">
       {appInfo?.icon ? (
-        <img 
+        <Image 
           src={appInfo.icon} 
           alt={appInfo.name}
+          width={24}
+          height={24}
           className="w-6 h-6 rounded-lg"
-          onError={(e) => {
-            e.currentTarget.style.display = 'none'
-          }}
+          unoptimized
         />
       ) : (
         <div className="w-6 h-6 bg-gray-200 rounded-lg flex items-center justify-center">
