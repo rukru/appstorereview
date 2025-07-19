@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+const gplay = require('google-play-scraper')
 
 export async function GET(request: NextRequest) {
   try {
@@ -38,15 +39,29 @@ export async function GET(request: NextRequest) {
         console.error('Error fetching App Store info:', error)
       }
     } else if (platform === 'googleplay') {
-      // Для Google Play можем использовать веб-скрапинг или API
-      // Пока возвращаем базовую информацию
-      appInfo = {
-        name: appId, // Используем package name как название
-        icon: null,
-        bundleId: appId,
-        description: null,
-        averageRating: null,
-        ratingCount: null
+      // Получаем информацию из Google Play
+      try {
+        const app = await gplay.default.app({ appId })
+        
+        appInfo = {
+          name: app.title,
+          icon: app.icon,
+          bundleId: app.appId,
+          description: app.summary || app.description,
+          averageRating: app.score,
+          ratingCount: app.reviews
+        }
+      } catch (error) {
+        console.error('Error fetching Google Play info:', error)
+        // Fallback к базовой информации
+        appInfo = {
+          name: appId, // Используем package name как название
+          icon: null,
+          bundleId: appId,
+          description: null,
+          averageRating: null,
+          ratingCount: null
+        }
       }
     }
 

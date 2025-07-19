@@ -81,31 +81,35 @@ function AppDisplay({ app, isSelected, onSelect }: AppDisplayProps) {
               alt={appInfo.name || app.name || app.appId}
               width={40}
               height={40}
-              className="w-10 h-10 rounded-lg"
+              className="w-10 h-10 rounded-lg object-cover"
               unoptimized
             />
-          ) : null}
-          
-          {/* Fallback Icon */}
-          <div 
-            className="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center"
-            style={{ display: appInfo?.icon ? 'none' : 'flex' }}
-          >
-            {getPlatformIcon(app.platform)}
-          </div>
+          ) : (
+            <div className="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center">
+              {getPlatformIcon(app.platform)}
+            </div>
+          )}
         </div>
         
         {/* App Info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
+            {getPlatformIcon(app.platform)}
             <span className="text-xs font-medium text-muted-foreground">
               {getPlatformName(app.platform)}
             </span>
           </div>
           
           <div className="font-semibold text-sm truncate mb-1">
-            {appInfo?.name || app.name || `App ID: ${app.appId}`}
+            {appInfo?.name || app.name || app.appId}
           </div>
+          
+          {/* Показываем app ID для Google Play если есть название */}
+          {appInfo?.name && app.platform === 'GOOGLEPLAY' && appInfo.name !== app.appId && (
+            <div className="text-xs text-muted-foreground truncate mb-1">
+              {app.appId}
+            </div>
+          )}
           
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
             <span className="flex items-center gap-1">
