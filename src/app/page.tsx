@@ -1,11 +1,16 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { SidebarPanel } from '@/components/SidebarPanel'
+import { Header } from '@/components/Header'
+import { SearchHeader } from '@/components/SearchHeader'
+import { SavedAnalysesContent } from '@/components/SavedAnalysesContent'
+import { SavedApps } from '@/components/SavedApps'
 import { ReviewsList } from '@/components/ReviewsList'
 import { AnalysisPanel } from '@/components/AnalysisPanel'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Review, ParsedReviews, AnalysisResult, DateFilter } from '@/types'
-import { MessageCircle, Star, TrendingUp, Target, Brain } from 'lucide-react'
+import { MessageCircle, Star, TrendingUp, Target, Brain, Bookmark, History, Search } from 'lucide-react'
 
 export default function Home() {
   const [reviews, setReviews] = useState<Review[]>([])
@@ -149,23 +154,29 @@ export default function Home() {
     }
   }
 
+  const handleAppSelect = (selectedAppId: string, selectedPlatform: 'appstore' | 'googleplay') => {
+    handleSearch(selectedAppId, selectedPlatform, false)
+  }
+
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-indigo-900/20">
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-3 mb-6">
-            <div className="p-3 rounded-xl gradient-bg">
-              <Brain className="h-8 w-8 text-white" />
-            </div>
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
-              Review Analyzer
-            </h1>
-          </div>
-          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto leading-relaxed">
-            Transform app reviews into actionable insights with AI-powered analysis. 
-            Discover what users love, need, and struggle with.
-          </p>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-indigo-900/20">
+      {/* Header */}
+      <Header />
+      
+      {/* Search Section */}
+      <SearchHeader 
+        onSearch={handleSearch} 
+        onAnalyze={handleAnalyze}
+        isLoading={isLoadingReviews}
+        isAnalyzing={isLoadingAnalysis}
+        hasReviews={reviews.length > 0}
+        dateFilter={dateFilter}
+        onDateFilterChange={setDateFilter}
+        currentAppId={currentAppId || undefined}
+        fromCache={fromCache}
+      />
+
+      <main className="container mx-auto px-4 py-8">
 
         {/* Dashboard Header with Quick Stats */}
         {reviewsData && (
@@ -231,25 +242,51 @@ export default function Home() {
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
-          {/* Sidebar Panel - Mobile: Full width, Desktop: 4 columns */}
-          <div className="lg:col-span-4 xl:col-span-3 order-2 lg:order-1">
-            <div className="lg:sticky lg:top-4">
-              <SidebarPanel 
-                onSearch={handleSearch} 
-                onAnalyze={handleAnalyze}
-                isLoading={isLoadingReviews}
-                isAnalyzing={isLoadingAnalysis}
-                hasReviews={reviews.length > 0}
-                dateFilter={dateFilter}
-                onDateFilterChange={setDateFilter}
-                currentAppId={currentAppId || undefined}
-                fromCache={fromCache}
-              />
+          {/* Sidebar for Saved Data */}
+          <div className="lg:col-span-4 xl:col-span-3">
+            <div className="lg:sticky lg:top-24">
+              <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl border-white/20">
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Bookmark className="h-5 w-5" />
+                    Saved Data
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Tabs defaultValue="analyses" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2">
+                      <TabsTrigger value="analyses" className="flex items-center gap-2">
+                        <History className="h-4 w-4" />
+                        Analyses
+                      </TabsTrigger>
+                      <TabsTrigger value="apps" className="flex items-center gap-2">
+                        <Search className="h-4 w-4" />
+                        Apps
+                      </TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="analyses" className="mt-4">
+                      <div className="max-h-80 overflow-y-auto">
+                        <SavedAnalysesContent />
+                      </div>
+                    </TabsContent>
+                    
+                    <TabsContent value="apps" className="mt-4">
+                      <div className="max-h-80 overflow-y-auto">
+                        <SavedApps 
+                          onAppSelect={handleAppSelect}
+                          selectedAppId={currentAppId || undefined}
+                        />
+                      </div>
+                    </TabsContent>
+                  </Tabs>
+                </CardContent>
+              </Card>
             </div>
           </div>
 
-          {/* Main Content Area - Mobile: Full width above sidebar, Desktop: 8/9 columns */}
-          <div className="lg:col-span-8 xl:col-span-9 space-y-6 order-1 lg:order-2">
+          {/* Main Content Area */}
+          <div className="lg:col-span-8 xl:col-span-9 space-y-6">
             {/* Empty State */}
             {!reviewsData && !isLoadingReviews && (
               <div className="flex items-center justify-center min-h-96">
@@ -291,7 +328,7 @@ export default function Home() {
             )}
           </div>
         </div>
-      </div>
-    </main>
+      </main>
+    </div>
   )
 }
