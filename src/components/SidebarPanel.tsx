@@ -1,7 +1,7 @@
 'use client'
 
 import { SearchForm } from './SearchForm'
-import { SavedAnalyses } from './SavedAnalyses'
+import { SavedAnalysesContent } from './SavedAnalysesContent'
 import { SavedApps } from './SavedApps'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
@@ -52,13 +52,13 @@ export function SidebarPanel(props: SidebarPanelProps) {
             </TabsList>
             
             <TabsContent value="analyses" className="mt-4">
-              <div className="h-64 xl:h-96 overflow-y-auto">
-                <SavedAnalyses />
+              <div className="max-h-80 overflow-y-auto">
+                <SavedAnalysesContent />
               </div>
             </TabsContent>
             
             <TabsContent value="apps" className="mt-4">
-              <div className="h-64 xl:h-96 overflow-y-auto">
+              <div className="max-h-80 overflow-y-auto">
                 <SavedApps 
                   onAppSelect={handleAppSelect}
                   selectedAppId={props.currentAppId}

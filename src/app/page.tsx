@@ -230,10 +230,10 @@ export default function Home() {
           </div>
         )}
 
-        <div className="flex flex-col xl:grid xl:grid-cols-4 gap-8">
-          {/* Sidebar Panel - Mobile: Full width, Desktop: 1 column */}
-          <div className="xl:col-span-1 order-1 xl:order-1">
-            <div className="xl:sticky xl:top-4">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+          {/* Sidebar Panel - Mobile: Full width, Desktop: 4 columns */}
+          <div className="lg:col-span-4 xl:col-span-3 order-2 lg:order-1">
+            <div className="lg:sticky lg:top-4">
               <SidebarPanel 
                 onSearch={handleSearch} 
                 onAnalyze={handleAnalyze}
@@ -248,8 +248,25 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Main Content Area - Mobile: Full width below sidebar, Desktop: 3 columns */}
-          <div className="xl:col-span-3 order-2 xl:order-2 space-y-6 xl:space-y-8">
+          {/* Main Content Area - Mobile: Full width above sidebar, Desktop: 8/9 columns */}
+          <div className="lg:col-span-8 xl:col-span-9 space-y-6 order-1 lg:order-2">
+            {/* Empty State */}
+            {!reviewsData && !isLoadingReviews && (
+              <div className="flex items-center justify-center min-h-96">
+                <div className="text-center">
+                  <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-purple-100 to-indigo-100 rounded-full flex items-center justify-center">
+                    <Brain className="w-12 h-12 text-purple-600" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                    Ready to Analyze Reviews
+                  </h3>
+                  <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+                    Enter an app ID and platform to start collecting and analyzing reviews with AI-powered insights.
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Analysis Results */}
             {analysis && (
               <AnalysisPanel
