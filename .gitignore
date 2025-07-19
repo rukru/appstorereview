@@ -85,3 +85,17 @@ temp/
 # Prisma
 prisma/migrations/migration_lock.toml
 .env*.local
+
+# Documentation and test reports
+docs/testing/reports/*.json
+docs/testing/reports/*.log
+!docs/testing/reports/.gitkeep
+
+# Temporary files
+scripts/temp/
+*.tmp
+*.temp
+
+# Test artifacts
+test-results/
+coverage-reports/
