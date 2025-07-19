@@ -168,7 +168,7 @@ export function SearchForm({ onSearch, onAnalyze, isLoading, isAnalyzing, hasRev
               <Calendar className="h-4 w-4" />
               Analysis Period
             </label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <Button
                 type="button"
                 variant={dateFilter === 'all' ? 'default' : 'outline'}
@@ -230,13 +230,6 @@ export function SearchForm({ onSearch, onAnalyze, isLoading, isAnalyzing, hasRev
         )}
 
 
-        {/* Saved Apps */}
-        <div className="mt-6">
-          <SavedApps 
-            onAppSelect={handleAppSelect}
-            selectedAppId={currentAppId}
-          />
-        </div>
       </CardContent>
     </Card>
   )

@@ -29,13 +29,17 @@ const formatDate = (dateString: string) => {
 
 export function ReviewCard({ review, className }: ReviewCardProps) {
   return (
-    <Card className={cn('w-full', className)}>
+    <Card className={cn('w-full bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl border-white/20 shadow-lg card-hover', className)}>
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
-          <CardTitle className="text-lg line-clamp-2">{review.title}</CardTitle>
+          <CardTitle className="text-lg line-clamp-2 text-gray-900 dark:text-white">{review.title}</CardTitle>
           <Badge
             variant={review.platform === 'appstore' ? 'default' : 'secondary'}
-            className="ml-2 flex items-center gap-1"
+            className={`ml-2 flex items-center gap-1 ${
+              review.platform === 'appstore' 
+                ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white border-0' 
+                : 'bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0'
+            }`}
           >
             <Smartphone className="h-3 w-3" />
             {review.platform === 'appstore' ? 'App Store' : 'Google Play'}

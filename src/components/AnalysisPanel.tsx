@@ -5,6 +5,7 @@ import { AnalysisResult, Problem, AppreciatedFeature, FeatureRequest } from '@/t
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { MetricsVisualization } from './MetricsVisualization'
 import {
   Brain,
   TrendingUp,
@@ -368,6 +369,9 @@ export function AnalysisPanel({
           </div>
         </CardContent>
       </Card>
+
+      {/* Metrics Visualization */}
+      <MetricsVisualization analysis={analysis} />
 
       {/* Appreciated Features */}
       {analysis.appreciatedFeatures && analysis.appreciatedFeatures.length > 0 && (
