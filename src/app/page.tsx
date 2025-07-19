@@ -176,117 +176,11 @@ export default function Home() {
         fromCache={fromCache}
       />
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-6">
 
-        {/* Dashboard Header with Quick Stats */}
-        {reviewsData && (
-          <div className="mb-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-              <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl p-6 rounded-2xl border border-white/20 shadow-xl card-hover">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl shadow-lg">
-                    <MessageCircle className="h-7 w-7 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-3xl font-bold text-gray-900 dark:text-white">{filteredReviews.length}</p>
-                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Reviews</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl p-6 rounded-2xl border border-white/20 shadow-xl card-hover">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl shadow-lg">
-                    <Star className="h-7 w-7 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-3xl font-bold text-gray-900 dark:text-white">{reviewsData.averageRating.toFixed(1)}</p>
-                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Average Rating</p>
-                  </div>
-                </div>
-              </div>
-
-              {analysis && (
-                <>
-                  <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl p-6 rounded-2xl border border-white/20 shadow-xl card-hover">
-                    <div className="flex items-center gap-4">
-                      <div className={`p-3 rounded-xl shadow-lg ${
-                        analysis.sentiment === 'positive' ? 'bg-gradient-to-br from-emerald-500 to-green-500' :
-                        analysis.sentiment === 'negative' ? 'bg-gradient-to-br from-red-500 to-rose-500' :
-                        'bg-gradient-to-br from-orange-500 to-amber-500'
-                      }`}>
-                        <TrendingUp className="h-7 w-7 text-white" />
-                      </div>
-                      <div>
-                        <p className="text-3xl font-bold text-gray-900 dark:text-white capitalize">{analysis.sentiment}</p>
-                        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Sentiment</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl p-6 rounded-2xl border border-white/20 shadow-xl card-hover">
-                    <div className="flex items-center gap-4">
-                      <div className="p-3 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-xl shadow-lg">
-                        <Target className="h-7 w-7 text-white" />
-                      </div>
-                      <div>
-                        <p className="text-3xl font-bold text-gray-900 dark:text-white">{analysis.score}/10</p>
-                        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Satisfaction</p>
-                      </div>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
-          {/* Sidebar for Saved Data */}
-          <div className="lg:col-span-4 xl:col-span-3">
-            <div className="lg:sticky lg:top-24">
-              <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl border-white/20">
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Bookmark className="h-5 w-5" />
-                    Saved Data
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <Tabs defaultValue="analyses" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2">
-                      <TabsTrigger value="analyses" className="flex items-center gap-2">
-                        <History className="h-4 w-4" />
-                        Analyses
-                      </TabsTrigger>
-                      <TabsTrigger value="apps" className="flex items-center gap-2">
-                        <Search className="h-4 w-4" />
-                        Apps
-                      </TabsTrigger>
-                    </TabsList>
-                    
-                    <TabsContent value="analyses" className="mt-4">
-                      <div className="max-h-80 overflow-y-auto">
-                        <SavedAnalysesContent />
-                      </div>
-                    </TabsContent>
-                    
-                    <TabsContent value="apps" className="mt-4">
-                      <div className="max-h-80 overflow-y-auto">
-                        <SavedApps 
-                          onAppSelect={handleAppSelect}
-                          selectedAppId={currentAppId || undefined}
-                        />
-                      </div>
-                    </TabsContent>
-                  </Tabs>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
           {/* Main Content Area */}
-          <div className="lg:col-span-8 xl:col-span-9 space-y-6">
+          <div className="xl:col-span-9 space-y-6">
             {/* Empty State */}
             {!reviewsData && !isLoadingReviews && (
               <div className="flex items-center justify-center min-h-96">
@@ -326,6 +220,49 @@ export default function Home() {
                 isLoading={isLoadingReviews}
               />
             )}
+          </div>
+
+          {/* Sidebar for Saved Data - Only on large screens */}
+          <div className="xl:col-span-3 hidden xl:block">
+            <div className="sticky top-32">
+              <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-xl border-white/20">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Bookmark className="h-4 w-4" />
+                    Saved Data
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Tabs defaultValue="analyses" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2 h-8">
+                      <TabsTrigger value="analyses" className="flex items-center gap-1 text-xs">
+                        <History className="h-3 w-3" />
+                        Analyses
+                      </TabsTrigger>
+                      <TabsTrigger value="apps" className="flex items-center gap-1 text-xs">
+                        <Search className="h-3 w-3" />
+                        Apps
+                      </TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="analyses" className="mt-3">
+                      <div className="max-h-80 overflow-y-auto">
+                        <SavedAnalysesContent />
+                      </div>
+                    </TabsContent>
+                    
+                    <TabsContent value="apps" className="mt-3">
+                      <div className="max-h-80 overflow-y-auto">
+                        <SavedApps 
+                          onAppSelect={handleAppSelect}
+                          selectedAppId={currentAppId || undefined}
+                        />
+                      </div>
+                    </TabsContent>
+                  </Tabs>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </main>
