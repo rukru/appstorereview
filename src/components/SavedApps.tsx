@@ -2,10 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Smartphone, Globe, Calendar, BarChart3, Trash2 } from 'lucide-react'
+import { Smartphone, Globe, Calendar, BarChart3 } from 'lucide-react'
 import { useAppInfo } from '@/hooks/useAppInfo'
 
 interface App {
@@ -63,29 +62,29 @@ function AppDisplay({ app, isSelected, onSelect }: AppDisplayProps) {
   
   return (
     <div
-      className={`p-3 rounded-lg border cursor-pointer transition-colors overflow-hidden ${
+      className={`p-2 rounded-lg border cursor-pointer transition-colors overflow-hidden ${
         isSelected 
           ? 'border-primary bg-primary/5' 
           : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
       }`}
       onClick={onSelect}
     >
-      <div className="flex items-start gap-3 min-w-0">
+      <div className="flex items-start gap-2 min-w-0">
         {/* App Icon */}
         <div className="flex-shrink-0">
           {loading ? (
-            <div className="w-10 h-10 bg-gray-200 rounded-lg animate-pulse"></div>
+            <div className="w-8 h-8 bg-gray-200 rounded-lg animate-pulse"></div>
           ) : appInfo?.icon ? (
             <Image 
               src={appInfo.icon} 
               alt={appInfo.name || app.name || app.appId}
-              width={40}
-              height={40}
-              className="w-10 h-10 rounded-lg object-cover"
+              width={32}
+              height={32}
+              className="w-8 h-8 rounded-lg object-cover"
               unoptimized
             />
           ) : (
-            <div className="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-gray-200 rounded-lg flex items-center justify-center">
               {getPlatformIcon(app.platform)}
             </div>
           )}
@@ -168,72 +167,49 @@ export function SavedApps({ onAppSelect, selectedAppId }: SavedAppsProps) {
 
   if (isLoading) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm flex items-center gap-2">
-            <BarChart3 className="h-4 w-4" />
-            Saved Apps
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="animate-pulse">
-                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                <div className="h-3 bg-gray-100 rounded w-1/2"></div>
-              </div>
-            ))}
+      <div className="space-y-2">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="animate-pulse">
+            <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+            <div className="h-3 bg-gray-100 rounded w-1/2"></div>
           </div>
-        </CardContent>
-      </Card>
+        ))}
+      </div>
     )
   }
 
   if (apps.length === 0) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-sm flex items-center gap-2">
-            <BarChart3 className="h-4 w-4" />
-            Saved Apps
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground text-center py-4">
-            No saved apps yet. Analyze some apps to see them here!
-          </p>
-        </CardContent>
-      </Card>
+      <p className="text-sm text-muted-foreground text-center py-4">
+        No saved apps yet. Analyze some apps to see them here!
+      </p>
     )
   }
 
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-sm flex items-center gap-2">
-          <BarChart3 className="h-4 w-4" />
-          Saved Apps ({apps.length})
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-2">
-        {apps.map((app) => (
-          <AppDisplay
-            key={app.id}
-            app={app}
-            isSelected={selectedAppId === app.appId}
-            onSelect={() => onAppSelect(app.appId, getPlatformKey(app.platform))}
-          />
-        ))}
-        
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full mt-4"
-          onClick={fetchApps}
-        >
-          Refresh List
-        </Button>
-      </CardContent>
-    </Card>
+    <div className="space-y-2">
+      <div className="flex items-center gap-2 mb-3">
+        <BarChart3 className="h-4 w-4" />
+        <span className="text-sm font-medium">Saved Apps ({apps.length})</span>
+      </div>
+      
+      {apps.map((app) => (
+        <AppDisplay
+          key={app.id}
+          app={app}
+          isSelected={selectedAppId === app.appId}
+          onSelect={() => onAppSelect(app.appId, getPlatformKey(app.platform))}
+        />
+      ))}
+      
+      <Button
+        variant="outline"
+        size="sm"
+        className="w-full mt-4"
+        onClick={fetchApps}
+      >
+        Refresh List
+      </Button>
+    </div>
   )
 }
