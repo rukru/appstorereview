@@ -7,10 +7,11 @@ import { SavedAnalysesContent } from '@/components/SavedAnalysesContent'
 import { SavedApps } from '@/components/SavedApps'
 import { ReviewsList } from '@/components/ReviewsList'
 import { AnalysisPanel } from '@/components/AnalysisPanel'
+import { ReviewCollectionManager } from '@/components/ReviewCollectionManager'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Review, ParsedReviews, AnalysisResult, DateFilter } from '@/types'
-import { MessageCircle, Star, TrendingUp, Target, Brain, Bookmark, History, Search } from 'lucide-react'
+import { MessageCircle, Star, TrendingUp, Target, Brain, Bookmark, History, Search, Download } from 'lucide-react'
 
 export default function Home() {
   const [reviews, setReviews] = useState<Review[]>([])
@@ -234,7 +235,7 @@ export default function Home() {
                 </CardHeader>
                 <CardContent>
                   <Tabs defaultValue="analyses" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2 h-8">
+                    <TabsList className="grid w-full grid-cols-3 h-8">
                       <TabsTrigger value="analyses" className="flex items-center gap-1 text-xs">
                         <History className="h-3 w-3" />
                         Analyses
@@ -242,6 +243,10 @@ export default function Home() {
                       <TabsTrigger value="apps" className="flex items-center gap-1 text-xs">
                         <Search className="h-3 w-3" />
                         Apps
+                      </TabsTrigger>
+                      <TabsTrigger value="collect" className="flex items-center gap-1 text-xs">
+                        <Download className="h-3 w-3" />
+                        Collect
                       </TabsTrigger>
                     </TabsList>
                     
@@ -256,6 +261,22 @@ export default function Home() {
                         <SavedApps 
                           onAppSelect={handleAppSelect}
                           selectedAppId={currentAppId || undefined}
+                        />
+                      </div>
+                    </TabsContent>
+                    
+                    <TabsContent value="collect" className="mt-3">
+                      <div className="max-h-96 overflow-y-auto">
+                        <ReviewCollectionManager
+                          appId={currentAppId || undefined}
+                          platform={currentPlatform || undefined}
+                          onCollectionComplete={(reviewsCount) => {
+                            console.log(`Collection completed: ${reviewsCount} reviews`)
+                            // Обновляем данные отзывов если собирали для текущего приложения
+                            if (currentAppId && currentPlatform) {
+                              handleSearch(currentAppId, currentPlatform, true)
+                            }
+                          }}
                         />
                       </div>
                     </TabsContent>

@@ -1,0 +1,11 @@
+# Test Reports Directory
+
+This directory contains automated test reports and results.
+
+Reports are automatically generated with timestamps and include:
+- Performance metrics
+- Error rates
+- Collection statistics
+- API response times
+
+Format: `test-type-YYYY-MM-DD-HH-MM.json`
