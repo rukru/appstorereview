@@ -1,24 +1,25 @@
 # App Store Review Analyzer
 
-A Next.js application that allows you to fetch and analyze app reviews from both App Store and Google Play using AI-powered insights.
+A comprehensive web application for collecting, analyzing, and gaining insights from App Store and Google Play reviews using AI-powered analysis.
 
 ## Features
 
-- 🍎 **App Store Reviews**: Fetch reviews using official RSS feeds
-- 🤖 **Google Play Reviews**: Parse reviews from Google Play Store pages
-- 🧠 **AI Analysis**: Analyze reviews using OpenAI GPT-4 for sentiment analysis and insights
-- 📊 **Review Statistics**: Display average ratings, review counts, and trends
-- 🎨 **Modern UI**: Beautiful interface built with shadcn/ui components
-- 🔍 **Smart Search**: Find apps easily with platform-specific search
+- 🌍 **Multi-Region Collection**: Fetch reviews from 15+ countries for App Store apps
+- 🤖 **GPT-4.1 Analysis**: Advanced AI analysis with structured output for features, requests, and problems
+- 📊 **Rich Insights**: Identify appreciated features, feature requests, and user problems
+- 🔍 **Smart Filtering**: Filter reviews by date, problems, and keywords
+- 💾 **Caching System**: Efficient data storage with PostgreSQL and Prisma
+- 🎨 **Modern UI**: Beautiful interface built with Next.js 15, React, and Tailwind CSS
 - 📱 **Responsive Design**: Works on desktop and mobile devices
 
 ## Tech Stack
 
-- **Frontend**: Next.js 15, React 19, TypeScript
-- **UI Components**: shadcn/ui with Tailwind CSS
-- **AI Integration**: OpenAI GPT-4
-- **Web Scraping**: Cheerio, Axios
-- **Styling**: Tailwind CSS with dark mode support
+- **Frontend**: Next.js 15, React, TypeScript, Tailwind CSS, Lucide Icons
+- **Backend**: Next.js API Routes, Prisma ORM
+- **Database**: PostgreSQL 
+- **AI**: OpenAI GPT-4.1 with structured outputs
+- **Parsing**: Custom parsers for App Store RSS + google-play-scraper for Google Play
+- **UI Components**: Custom component library with shadcn/ui
 
 ## Getting Started
 
@@ -26,6 +27,7 @@ A Next.js application that allows you to fetch and analyze app reviews from both
 
 - Node.js 18.18.0 or higher
 - npm or yarn
+- PostgreSQL database
 - OpenAI API key
 
 ### Installation
@@ -49,30 +51,50 @@ npm install
 cp .env.local.example .env.local
 ```
 
-4. Add your OpenAI API key to `.env.local`:
+4. Add your environment variables to `.env.local`:
 
 ```
 OPENAI_API_KEY=your_openai_api_key_here
+DATABASE_URL=postgresql://username:password@localhost:5432/appstorereview
 ```
 
-5. Start the development server:
+5. Set up the database:
+
+```bash
+npx prisma migrate dev
+```
+
+6. Start the development server:
 
 ```bash
 npm run dev
 ```
 
-6. Open [http://localhost:3000](http://localhost:3000) in your browser.
+7. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Usage
+
+### Multi-Region App Store Collection
+
+The application supports collecting reviews from multiple geographic regions:
+
+- **Single**: Russia only (fast)
+- **Major**: RU, US, GB, DE, FR, JP (default, balanced)
+- **English**: US, GB, AU, CA (English-speaking)
+- **Europe**: GB, DE, FR, IT, ES, RU (European markets)
+- **Americas**: US, CA, BR, MX (North & South America)
+- **Asia**: JP, KR, IN, CN (Asian markets)  
+- **All**: All 15 major regions (comprehensive)
 
 ### Fetching App Store Reviews
 
 1. Select "App Store" platform
 2. Enter the App Store ID (found in the app's URL: `https://apps.apple.com/app/id[APP_ID]`)
-3. Click "Get Reviews"
+3. Choose your region collection strategy
+4. Click "Get Reviews"
 
-Example App Store IDs:
-
+Popular test apps:
+- Telegram: `686449807`
 - Facebook: `284882215`
 - Instagram: `389801252`
 
@@ -83,111 +105,144 @@ Example App Store IDs:
 3. Click "Get Reviews"
 
 Example package names:
-
 - WhatsApp: `com.whatsapp`
 - YouTube: `com.google.android.youtube`
 
-### AI Analysis
+### Enhanced AI Analysis
 
-After fetching reviews, click "Analyze Reviews" to get AI-powered insights including:
+The application uses GPT-4.1 with structured outputs to provide:
 
-- Overall sentiment analysis
-- Key themes and topics
-- Satisfaction score
-- Actionable recommendations
+- **Appreciated Features**: What users love about the app
+- **Feature Requests**: What users want added  
+- **Problems**: Issues users are experiencing
+- **Overall satisfaction score** (1-10)
+- **Sentiment analysis**: positive/negative/neutral/mixed
+- **Multi-language support**: Russian and English analysis
+- **Actionable recommendations** based on user feedback
 
 ## Available Scripts
 
-- `npm run dev` - Start development server
+- `npm run dev` - Start development server (localhost:3000)
 - `npm run build` - Build for production
 - `npm run start` - Start production server
 - `npm run lint` - Run ESLint
-- `npm run lint:fix` - Fix ESLint issues
-- `npm run type-check` - Run TypeScript type checking
-- `npm run format` - Format code with Prettier
-- `npm run format:check` - Check code formatting
+- `npm run typecheck` - Run TypeScript checks
+- `npx prisma migrate dev` - Run database migrations
+- `npx prisma studio` - Open database admin interface
 
 ## Project Structure
 
 ```
-src/
-├── app/                    # Next.js app directory
-│   ├── api/               # API routes
-│   │   ├── analyze/       # AI analysis endpoint
-│   │   └── reviews/       # Review fetching endpoint
-│   ├── globals.css        # Global styles
-│   ├── layout.tsx         # Root layout
-│   └── page.tsx          # Home page
-├── components/            # React components
-│   ├── ui/               # shadcn/ui components
-│   ├── AnalysisPanel.tsx # AI analysis display
-│   ├── ReviewCard.tsx    # Individual review component
-│   ├── ReviewsList.tsx   # Reviews list with stats
-│   └── SearchForm.tsx    # App search form
-├── lib/                  # Utility libraries
-│   ├── api/             # API integration
-│   │   └── openai.ts    # OpenAI service
-│   ├── parsers/         # Review parsers
-│   │   ├── appstore.ts  # App Store parser
-│   │   └── googleplay.ts # Google Play parser
-│   └── utils.ts         # Utility functions
-└── types/               # TypeScript type definitions
-    └── index.ts
+├── src/
+│   ├── app/                 # Next.js app directory
+│   │   ├── api/            # API routes
+│   │   │   ├── reviews/    # Review collection endpoint
+│   │   │   ├── analyze/    # AI analysis endpoint
+│   │   │   ├── search/     # App search endpoint
+│   │   │   └── analytics/  # Analytics endpoint
+│   │   └── page.tsx        # Main application page
+│   ├── components/         # React components
+│   │   ├── ui/            # Base UI components
+│   │   ├── SearchForm.tsx  # Review search interface
+│   │   ├── ReviewsList.tsx # Reviews display
+│   │   └── AnalysisPanel.tsx # AI analysis display
+│   ├── lib/
+│   │   ├── parsers/       # Platform-specific parsers
+│   │   │   ├── appstore.ts # Multi-region App Store parser
+│   │   │   └── googleplay.ts # Google Play parser
+│   │   ├── services/      # Business logic services
+│   │   │   ├── reviewService.ts # Review management
+│   │   │   └── analysisService.ts # AI analysis management
+│   │   └── api/
+│   │       └── openai.ts  # GPT-4.1 integration
+│   ├── types/             # TypeScript type definitions
+│   └── styles/            # Global styles
+├── prisma/                # Database schema and migrations
+├── scripts/               # Development and testing scripts
+└── docs/                  # Documentation
 ```
 
 ## API Routes
 
 ### GET /api/reviews
 
-Fetch reviews for a specific app.
+Fetch reviews for a specific app with multi-region support.
 
 **Parameters:**
-
 - `appId`: App Store ID or Google Play package name
 - `platform`: `appstore` or `googleplay`
+- `regions`: Comma-separated list of regions (App Store only)
 
 **Example:**
-
 ```
-GET /api/reviews?appId=284882215&platform=appstore
+GET /api/reviews?appId=686449807&platform=appstore&regions=single
 ```
 
 ### POST /api/analyze
 
-Analyze reviews using AI.
+Analyze reviews using GPT-4.1 with structured outputs.
 
 **Body:**
-
 ```json
 {
-  "reviews": [...]
+  "reviews": [...],
+  "language": "en" | "ru"
 }
 ```
+
+### GET /api/search
+
+Search for apps on both platforms.
+
+**Parameters:**
+- `query`: Search term
+- `platform`: `appstore` or `googleplay`
+
+### GET /api/analytics
+
+Get analytics data for reviews and usage.
 
 ## Configuration
 
 ### Environment Variables
 
 - `OPENAI_API_KEY`: Your OpenAI API key (required for AI analysis)
+- `DATABASE_URL`: PostgreSQL connection string
 
-### Tailwind CSS
+### Database
 
-The project uses Tailwind CSS with custom configuration. CSS variables are defined in `globals.css` for consistent theming.
+The application uses PostgreSQL with Prisma ORM for efficient data storage and caching.
+
+## Testing
+
+- Manual testing through web interface
+- API testing scripts in `/scripts` directory
+- Test GPT-4.1 integration: `node scripts/test-enhanced-schema.js`
+- Popular test app: Telegram (686449807)
 
 ## Limitations
 
 - **Google Play**: Web scraping may be affected by Google's anti-bot measures
 - **Rate Limits**: Both platforms may have rate limiting
-- **Review Count**: Limited number of reviews per request to manage API costs
 - **OpenAI Costs**: AI analysis uses OpenAI API which incurs costs
+- **Multi-region**: Collection from 15+ regions may take longer for comprehensive analysis
+
+## Development Notes
+
+- Always run linting before commits: `npm run lint`
+- Test multi-region collection with popular apps
+- Monitor OpenAI API usage and costs
+- Implement proper error handling for rate limits
+- Follow security best practices - never commit secrets
 
 ## Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Run linting and type checking
-5. Submit a pull request
+4. Run linting and type checking: `npm run lint && npm run typecheck`
+5. Test your changes with database migrations if needed
+6. Submit a pull request
 
 ## License
 

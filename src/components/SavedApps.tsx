@@ -63,14 +63,14 @@ function AppDisplay({ app, isSelected, onSelect }: AppDisplayProps) {
   
   return (
     <div
-      className={`p-3 rounded-lg border cursor-pointer transition-colors ${
+      className={`p-3 rounded-lg border cursor-pointer transition-colors overflow-hidden ${
         isSelected 
           ? 'border-primary bg-primary/5' 
           : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
       }`}
       onClick={onSelect}
     >
-      <div className="flex items-start gap-3">
+      <div className="flex items-start gap-3 min-w-0">
         {/* App Icon */}
         <div className="flex-shrink-0">
           {loading ? (
@@ -100,7 +100,16 @@ function AppDisplay({ app, isSelected, onSelect }: AppDisplayProps) {
             </span>
           </div>
           
-          <div className="font-semibold text-sm truncate mb-1">
+          <div 
+            className="font-semibold text-sm mb-1 leading-tight overflow-hidden"
+            style={{
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              wordBreak: 'break-word'
+            }}
+            title={appInfo?.name || app.name || app.appId}
+          >
             {appInfo?.name || app.name || app.appId}
           </div>
           
@@ -111,19 +120,19 @@ function AppDisplay({ app, isSelected, onSelect }: AppDisplayProps) {
             </div>
           )}
           
-          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
             <span className="flex items-center gap-1">
-              <Calendar className="h-3 w-3" />
-              {formatDate(app.updatedAt)}
+              <Calendar className="h-3 w-3 flex-shrink-0" />
+              <span className="truncate">{formatDate(app.updatedAt)}</span>
             </span>
           </div>
           
-          <div className="flex items-center gap-2 mt-2">
-            <Badge variant="secondary" className="text-xs">
-              {app._count.reviews} reviews
+          <div className="flex items-center gap-1 overflow-hidden">
+            <Badge variant="secondary" className="text-xs whitespace-nowrap flex-shrink-0">
+              {app._count.reviews} rev
             </Badge>
-            <Badge variant="outline" className="text-xs">
-              {app._count.analyses} analyses
+            <Badge variant="outline" className="text-xs whitespace-nowrap flex-shrink-0">
+              {app._count.analyses} ana
             </Badge>
           </div>
         </div>

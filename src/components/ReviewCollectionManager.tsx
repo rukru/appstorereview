@@ -251,13 +251,13 @@ export function ReviewCollectionManager({
             
             {currentAppJobs.map((job) => (
               <div key={job.id} className="border rounded-lg p-3 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
                     {getStatusIcon(job.status)}
                     <Badge className={getStatusColor(job.status)}>
                       {job.status.toUpperCase()}
                     </Badge>
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-gray-600 truncate">
                       {job.platform === 'appstore' ? 'App Store' : 'Google Play'}
                     </span>
                   </div>
@@ -267,6 +267,7 @@ export function ReviewCollectionManager({
                       size="sm"
                       variant="outline"
                       onClick={() => cancelJob(job.id)}
+                      className="flex-shrink-0"
                     >
                       <Square className="h-3 w-3 mr-1" />
                       Cancel
@@ -276,26 +277,26 @@ export function ReviewCollectionManager({
                 
                 {job.status === 'running' && (
                   <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>Progress: {job.completedCountries}/{job.totalCountries} countries</span>
-                      <span>{job.progress}%</span>
+                    <div className="flex justify-between text-sm gap-2">
+                      <span className="truncate">Progress: {job.completedCountries}/{job.totalCountries} countries</span>
+                      <span className="flex-shrink-0">{job.progress}%</span>
                     </div>
                     <Progress value={job.progress} className="h-2" />
                   </div>
                 )}
                 
-                <div className="grid grid-cols-3 gap-4 text-sm">
-                  <div>
-                    <span className="text-gray-500">Reviews:</span>
-                    <div className="font-medium">{job.reviewsCollected.toLocaleString()}</div>
+                <div className="grid grid-cols-3 gap-2 text-sm">
+                  <div className="min-w-0">
+                    <span className="text-gray-500 text-xs">Reviews:</span>
+                    <div className="font-medium truncate">{job.reviewsCollected.toLocaleString()}</div>
                   </div>
-                  <div>
-                    <span className="text-gray-500">Duration:</span>
-                    <div className="font-medium">{formatDuration(job.startedAt, job.completedAt)}</div>
+                  <div className="min-w-0">
+                    <span className="text-gray-500 text-xs">Duration:</span>
+                    <div className="font-medium truncate">{formatDuration(job.startedAt, job.completedAt)}</div>
                   </div>
-                  <div>
-                    <span className="text-gray-500">Errors:</span>
-                    <div className="font-medium text-red-600">{job.errors.length}</div>
+                  <div className="min-w-0">
+                    <span className="text-gray-500 text-xs">Errors:</span>
+                    <div className="font-medium text-red-600 truncate">{job.errors.length}</div>
                   </div>
                 </div>
                 

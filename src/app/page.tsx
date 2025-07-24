@@ -235,29 +235,29 @@ export default function Home() {
                 </CardHeader>
                 <CardContent>
                   <Tabs defaultValue="analyses" className="w-full">
-                    <TabsList className="grid w-full grid-cols-3 h-8">
-                      <TabsTrigger value="analyses" className="flex items-center gap-1 text-xs">
-                        <History className="h-3 w-3" />
-                        Analyses
+                    <TabsList className="grid w-full grid-cols-3 h-8 text-xs">
+                      <TabsTrigger value="analyses" className="flex items-center gap-1 text-xs min-w-0">
+                        <History className="h-3 w-3 flex-shrink-0" />
+                        <span className="truncate">Analyses</span>
                       </TabsTrigger>
-                      <TabsTrigger value="apps" className="flex items-center gap-1 text-xs">
-                        <Search className="h-3 w-3" />
-                        Apps
+                      <TabsTrigger value="apps" className="flex items-center gap-1 text-xs min-w-0">
+                        <Search className="h-3 w-3 flex-shrink-0" />
+                        <span className="truncate">Apps</span>
                       </TabsTrigger>
-                      <TabsTrigger value="collect" className="flex items-center gap-1 text-xs">
-                        <Download className="h-3 w-3" />
-                        Collect
+                      <TabsTrigger value="collect" className="flex items-center gap-1 text-xs min-w-0">
+                        <Download className="h-3 w-3 flex-shrink-0" />
+                        <span className="truncate">Collect</span>
                       </TabsTrigger>
                     </TabsList>
                     
                     <TabsContent value="analyses" className="mt-3">
-                      <div className="max-h-80 overflow-y-auto">
+                      <div className="max-h-80 overflow-y-auto overflow-x-hidden">
                         <SavedAnalysesContent />
                       </div>
                     </TabsContent>
                     
                     <TabsContent value="apps" className="mt-3">
-                      <div className="max-h-80 overflow-y-auto">
+                      <div className="max-h-80 overflow-y-auto overflow-x-hidden">
                         <SavedApps 
                           onAppSelect={handleAppSelect}
                           selectedAppId={currentAppId || undefined}
@@ -266,7 +266,7 @@ export default function Home() {
                     </TabsContent>
                     
                     <TabsContent value="collect" className="mt-3">
-                      <div className="max-h-96 overflow-y-auto">
+                      <div className="max-h-96 overflow-y-auto overflow-x-hidden">
                         <ReviewCollectionManager
                           appId={currentAppId || undefined}
                           platform={currentPlatform || undefined}
